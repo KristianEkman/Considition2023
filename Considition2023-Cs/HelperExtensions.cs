@@ -12,5 +12,8 @@ namespace Considition2023_Cs
         public static void PrintJson(this object obj) { 
             Console.WriteLine(JsonConvert.SerializeObject(obj, Formatting.Indented));
         }
+
+
+
     }
 }

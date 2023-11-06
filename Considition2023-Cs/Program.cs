@@ -32,6 +32,8 @@ var mapName = option switch
     "5" => MapNames.Vasteras,
     "6" => MapNames.Orebro,
     "7" => MapNames.London,
+    "8" => MapNames.Linkoping,
+    "9" => MapNames.Berlin,
     _ => null
 };
 
@@ -44,9 +46,9 @@ if (mapName is null)
 HttpClient client = new();
 Api api = new(client);
 MapData mapData = await api.GetMapDataAsync(mapName, apikey);
-mapData.PrintJson();
+//mapData.PrintJson();
 GeneralData generalData = await api.GetGeneralDataAsync();
-generalData.PrintJson();
+//generalData.PrintJson();
 
 SubmitSolution solution = new() 
 {
@@ -68,7 +70,10 @@ foreach (KeyValuePair<string, StoreLocation> locationKeyPair in mapData.location
 }
 
 GameData score = new Scoring().CalculateScore(string.Empty, solution, mapData, generalData);
+score.GameScore.PrintJson();
 Console.WriteLine($"GameScore: {score.GameScore.Total}");
 GameData prodScore = await api.SumbitAsync(mapName, solution, apikey);
 Console.WriteLine($"GameId: {prodScore.Id}");
+prodScore.GameScore.PrintJson();
+
 Console.ReadLine();
