@@ -1,4 +1,6 @@
 ﻿using Considition2023_Cs;
+using Considition2023_Cs.Solutions;
+using KristianEkman.GraphLib;
 using System.Text.Json.Serialization;
 
 const string apikey = "20d51f18-3a6f-4419-8466-1fac81f7e540";
@@ -50,30 +52,20 @@ MapData mapData = await api.GetMapDataAsync(mapName, apikey);
 GeneralData generalData = await api.GetGeneralDataAsync();
 //generalData.PrintJson();
 
-SubmitSolution solution = new() 
-{
-    Locations = new()
-};
-foreach (KeyValuePair<string, StoreLocation> locationKeyPair in mapData.locations)
-{
-    StoreLocation location = locationKeyPair.Value;
-    //string name = locationKeyPair.Key;
-    var salesVolume = location.SalesVolume;
-    if (salesVolume > 100)
-    {
-        solution.Locations[location.LocationName] = new PlacedLocations() 
-        { 
-            Freestyle3100Count = 0, 
-            Freestyle9100Count = 1
-        };
-    }
-}
+var solution = OriginalExample.GetSolution(mapData);
 
 GameData score = new Scoring().CalculateScore(string.Empty, solution, mapData, generalData);
 score.GameScore.PrintJson();
 Console.WriteLine($"GameScore: {score.GameScore.Total}");
-GameData prodScore = await api.SumbitAsync(mapName, solution, apikey);
-Console.WriteLine($"GameId: {prodScore.Id}");
-prodScore.GameScore.PrintJson();
+
+//GameData prodScore = await api.SumbitAsync(mapName, solution, apikey);
+//Console.WriteLine($"GameId: {prodScore.Id}");
+//prodScore.GameScore.PrintJson();
+
+//var graph = new Graph("Test.dgrm", new[] { "S1", "S2", "S3" });
+//graph.Series[0].AddPoints((0, 0), (1,3), (5, 4));
+//graph.Series[1].AddPoints((1, 1), (3,3), (7, 4));
+//graph.Series[2].AddPoints((3, 2), (3,3), (8, 4));
+//graph.Save("Test.dgrm");
 
 Console.ReadLine();

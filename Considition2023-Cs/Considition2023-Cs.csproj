@@ -12,4 +12,10 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="GraphLib">
+      <HintPath>Graphviewer\GraphLib.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>

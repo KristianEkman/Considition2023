@@ -1,0 +1,4 @@
+Reda ut matematiskt, hur ser de olika beroendena ut.
+
+Done
+Graphviewer
