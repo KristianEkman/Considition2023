@@ -26,11 +26,14 @@ KgCo2Savings för alla locations
 
 * Spara High Score och lösning
 
+* Placering med hänsyn till närliggande.
+
 
 
 DONE
 ====
 Graphviewer
+Enkel ramp
 
 
 Frågor
