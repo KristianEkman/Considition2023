@@ -28,6 +28,8 @@ KgCo2Savings för alla locations
 
 * Placering med hänsyn till närliggande.
 
+* Räkna ut så att capaciteten blir så bra som möjligt
+
 
 
 DONE

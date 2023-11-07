@@ -50,7 +50,8 @@ GeneralData generalData = await api.GetGeneralDataAsync();
 //generalData.PrintJson();
 
 //OriginalExample.Run(mapData, generalData);
-SimpleRamp.Run(mapData, generalData);
+//SimpleRamp.Run(mapData, generalData);
+CapacityVolumeMatch.Run(mapData, generalData);
 
 //GameData prodScore = await api.SumbitAsync(mapName, solution, apikey);
 //Console.WriteLine($"GameId: {prodScore.Id}");
