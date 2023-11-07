@@ -3,10 +3,7 @@ using Considition2023_Cs.Solutions;
 using KristianEkman.GraphLib;
 using System.Text.Json.Serialization;
 
-const string apikey = "20d51f18-3a6f-4419-8466-1fac81f7e540";
-
-
-if (string.IsNullOrWhiteSpace(apikey))
+if (string.IsNullOrWhiteSpace(HelperExtensions.Apikey))
 {
     Console.WriteLine("Configure apiKey");
     return;
@@ -47,16 +44,13 @@ if (mapName is null)
 
 HttpClient client = new();
 Api api = new(client);
-MapData mapData = await api.GetMapDataAsync(mapName, apikey);
+MapData mapData = await api.GetMapDataAsync(mapName, HelperExtensions.Apikey);
 //mapData.PrintJson();
 GeneralData generalData = await api.GetGeneralDataAsync();
 //generalData.PrintJson();
 
-var solution = OriginalExample.GetSolution(mapData);
-
-GameData score = new Scoring().CalculateScore(string.Empty, solution, mapData, generalData);
-score.GameScore.PrintJson();
-Console.WriteLine($"GameScore: {score.GameScore.Total.ToSI()}");
+//OriginalExample.Run(mapData, generalData);
+SimpleRamp.Run(mapData, generalData);
 
 //GameData prodScore = await api.SumbitAsync(mapName, solution, apikey);
 //Console.WriteLine($"GameId: {prodScore.Id}");
@@ -68,4 +62,4 @@ Console.WriteLine($"GameScore: {score.GameScore.Total.ToSI()}");
 //graph.Series[2].AddPoints((3, 2), (3,3), (8, 4));
 //graph.Save("Test.dgrm");
 
-Console.ReadLine();
+// Console.ReadLine();

@@ -10,7 +10,7 @@ namespace Considition2023_Cs
 {
     public class SubmitSolution
     {
-        public required Dictionary<string, PlacedLocations> Locations { get; set; }
+        public Dictionary<string, PlacedLocations> Locations { get; set; } = new();
     }
 
     public class PlacedLocations

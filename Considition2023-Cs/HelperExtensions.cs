@@ -55,5 +55,8 @@ namespace Considition2023_Cs
             return distance;
         }
 
+        public static string Apikey = "20d51f18-3a6f-4419-8466-1fac81f7e540";
+
+
     }
 }

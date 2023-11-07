@@ -8,7 +8,7 @@ namespace Considition2023_Cs.Solutions
 {
     internal class OriginalExample
     {
-        public static SubmitSolution GetSolution(MapData mapData)
+        public static void Run(MapData mapData, GeneralData generalData)
         {
             SubmitSolution solution = new()
             {
@@ -28,7 +28,10 @@ namespace Considition2023_Cs.Solutions
                     };
                 }
             }
-            return solution;
+
+            GameData score = new Scoring().CalculateScore(string.Empty, solution, mapData, generalData);
+            score.GameScore.PrintJson();
+            Console.WriteLine($"GameScore: {score.GameScore.Total.ToSI()}");
         }
     }
 }
