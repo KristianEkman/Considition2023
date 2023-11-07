@@ -56,7 +56,7 @@ var solution = OriginalExample.GetSolution(mapData);
 
 GameData score = new Scoring().CalculateScore(string.Empty, solution, mapData, generalData);
 score.GameScore.PrintJson();
-Console.WriteLine($"GameScore: {score.GameScore.Total}");
+Console.WriteLine($"GameScore: {score.GameScore.Total.ToSI()}");
 
 //GameData prodScore = await api.SumbitAsync(mapName, solution, apikey);
 //Console.WriteLine($"GameId: {prodScore.Id}");

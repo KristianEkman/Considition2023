@@ -1,4 +1,38 @@
-Reda ut matematiskt, hur ser de olika beroendena ut.
+TODO
+====
 
-Done
+* Testa att api:et ger samma svar som api:et
+
+
+* Reda ut matematiskt, hur ser de olika beroendena ut.
+
+Total = (KgCo2Savings * Co2PricePerKiloInSek + Earnings) * (1 + TotalFootfall)
+
+Co2PricePerKiloInSek: konstant
+
+KgCo2Savings för alla locations
+	
+	Co2Savings = sales * (classic - refill) ---> konstanter i general data
+
+	sales = Min(Volume, Capacity)
+	Volume ökas för locations utan station beroende på WillingnessToTravel och avstådet till annan station.
+	
+	** INSIKT **:, om Capacity < Volume kommer man inte tjäna på att ha toma Locations runt en Station
+
+	Earnings = Revenue - LeasingCost
+
+	TotalFootFall = Summan av alla FootFall
+
+
+* Spara High Score och lösning
+
+
+
+DONE
+====
 Graphviewer
+
+
+Frågor
+======
+Får man olika general data per karta?

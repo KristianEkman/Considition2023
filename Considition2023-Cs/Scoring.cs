@@ -73,7 +73,7 @@ namespace Considition2023_Cs
                 if (kvp.Value.SalesCapacity < kvp.Value.SalesVolume) { sales = kvp.Value.SalesCapacity; }
 
                 kvp.Value.GramCo2Savings = sales * (generalData.ClassicUnitData.Co2PerUnitInGrams - generalData.RefillUnitData.Co2PerUnitInGrams);
-                scored.GameScore.KgCo2Savings += kvp.Value.GramCo2Savings / 1000;
+                scored.GameScore.KgCo2Savings += kvp.Value.GramCo2Savings / 1000; //Kristian: * 1000 (eller?)
                 if (kvp.Value.GramCo2Savings > 0)
                 {
                     kvp.Value.IsCo2Saving = true;
@@ -123,14 +123,13 @@ namespace Considition2023_Cs
         {
             foreach (KeyValuePair<string, StoreLocationScoring> kvpWithout in without)
             {
+                // Lista av distanser till platser som har station och som ligger tillräckligt nära.
                 Dictionary<string, double> distributeSalesTo = new();
-                //double locationSalesFrom = await GetSalesVolume(kvpWithout.Value.LocationType) ?? throw new Exception(string.Format("Location: {0}, have an invalid location type: {1}", kvpWithout.Key, kvpWithout.Value.LocationType));
-
+                
                 foreach (KeyValuePair<string, StoreLocationScoring> kvpWith in with)
                 {
-                    int distance = DistanceBetweenPoint(
-                        kvpWithout.Value.Latitude, kvpWithout.Value.Longitude, kvpWith.Value.Latitude, kvpWith.Value.Longitude
-                    );
+                    int distance = kvpWithout.Value.DistanceTo(kvpWith.Value);
+                    //DistanceBetweenPoint(kvpWithout.Value.Latitude, kvpWithout.Value.Longitude, kvpWith.Value.Latitude, kvpWith.Value.Longitude                    
                     if (distance < generalData.WillingnessToTravelInMeters)
                     {
                         distributeSalesTo[kvpWith.Value.LocationName] = distance;
@@ -138,6 +137,7 @@ namespace Considition2023_Cs
                 }
 
                 double total = 0;
+                // Försäljningsvolymen ökas litegrann för de toma platserna i närheten.
                 if (distributeSalesTo.Count > 0)
                 {
                     foreach (KeyValuePair<string, double> kvp in distributeSalesTo)
@@ -150,32 +150,12 @@ namespace Considition2023_Cs
                     foreach (KeyValuePair<string, double> kvp in distributeSalesTo)
                     {
                         with[kvp.Key].SalesVolume += distributeSalesTo[kvp.Key] / total *
-                        generalData.RefillDistributionRate * kvpWithout.Value.SalesVolume;//locationSalesFrom;
+                        generalData.RefillDistributionRate * kvpWithout.Value.SalesVolume;
                     }
                 }
             }
 
             return with;
-        }
-
-        private static int DistanceBetweenPoint(double latitude1, double longitude1, double latitude2, double longitude2)
-        {
-            double r = 6371e3;
-            double latRadian1 = latitude1 * Math.PI / 180;
-            double latRadian2 = latitude2 * Math.PI / 180;
-
-            double latDelta = (latitude2 - latitude1) * Math.PI / 180;
-            double longDelta = (longitude2 - longitude1) * Math.PI / 180;
-
-            double a = Math.Sin(latDelta / 2) * Math.Sin(latDelta / 2) +
-                Math.Cos(latRadian1) * Math.Cos(latRadian2) *
-                Math.Sin(longDelta / 2) * Math.Sin(longDelta / 2);
-
-            double c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
-
-            int distance = (int)Math.Round(r * c, 0);
-
-            return distance;
         }
     }
 }
