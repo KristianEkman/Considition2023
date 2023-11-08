@@ -51,11 +51,8 @@ GeneralData generalData = await api.GetGeneralDataAsync();
 
 //OriginalExample.Run(mapData, generalData);
 //SimpleRamp.Run(mapData, generalData);
-CapacityVolumeMatch.Run(mapData, generalData);
+//CapacityVolumeMatch.Run(mapData, generalData);
 
-//GameData prodScore = await api.SumbitAsync(mapName, solution, apikey);
-//Console.WriteLine($"GameId: {prodScore.Id}");
-//prodScore.GameScore.PrintJson();
 
 //var graph = new Graph("Test.dgrm", new[] { "S1", "S2", "S3" });
 //graph.Series[0].AddPoints((0, 0), (1,3), (5, 4));
