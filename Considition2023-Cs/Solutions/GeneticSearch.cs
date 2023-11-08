@@ -1,19 +1,18 @@
 using System.Reflection;
-using System.Reflection.Metadata;
 using Considition2023_Cs;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 public class GeneticSearch
 {
-    static Random Rnd = new(500);
-    static Scoring Scoring = new();
-    const int MaxRnd = 2;
+    static Random Rnd = new(500);    
+    const int MaxRnd = 3;
+    const int childCount = 300;
+    const int Runs = 3000;
+
     public static async void Run(MapData mapData, GeneralData generalData)
     {
         var size = mapData.locations.Count;
         var male = RandomArray(size);
-        var female = RandomArray(size);
-        var childCount = 200;
+        var female = RandomArray(size);        
         var children = new (int, int)[childCount][];
         for (int i = 0; i < childCount; i++)
         {
@@ -23,7 +22,7 @@ public class GeneticSearch
         var max = 0d;
         (int Index, double Score)[] twoBest;
         var best = new (int, int)[size];
-        for (int n = 0; n < 1000; n++)
+        for (int n = 0; n < Runs; n++)
         {
             MakeChildren(children, male, female);
             twoBest = Evaluate(children, mapData, generalData);
@@ -33,7 +32,6 @@ public class GeneticSearch
             if (twoBest[0].Score > max)
             {
                 max = twoBest[0].Score;
-                // todo, store the array
                 Console.WriteLine($"{n}. {twoBest[0].Score.ToSI()}");
                 Array.Copy(children[twoBest[0].Index], best, best.Length);
             }
@@ -70,8 +68,8 @@ public class GeneticSearch
         var topList = new List<(int Index, double Score)>();
         var names = mapData.locations.Select(x => x.Value.LocationName).ToArray();
 
-        for (int i = 0;i < children.Length;i++)
-        //Parallel.For(0, children.Length, (int i) => 
+        //for (int i = 0;i < children.Length;i++)
+        Parallel.For(0, children.Length, (int i) => 
         {
             SubmitSolution solution = new();
             var child = children[i];
@@ -88,9 +86,12 @@ public class GeneticSearch
             }
 
             var score = Scoring.CalculateScore(string.Empty, solution, mapData, generalData);
-            topList.Add((i, score.GameScore.Total));
+            lock(topList)
+            {
+                topList.Add((i, score.GameScore.Total));
+            }
         }
-        //);
+        );
 
         topList = topList.OrderByDescending(x => x.Score).ToList();        
 

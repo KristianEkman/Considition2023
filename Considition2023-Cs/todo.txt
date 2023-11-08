@@ -1,6 +1,8 @@
 TODO
 ====
 
+* optimera scoring-funktionen
+
 * Reda ut matematiskt, hur ser de olika beroendena ut.
 
 Total = (KgCo2Savings * Co2PricePerKiloInSek + Earnings) * (1 + TotalFootfall)
