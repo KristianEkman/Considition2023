@@ -10,10 +10,7 @@ namespace Considition2023_Cs.Solutions
     {
         public static void Run(MapData mapData, GeneralData generalData)
         {
-            SubmitSolution solution = new()
-            {
-                Locations = new()
-            };
+            SubmitSolution solution = new();
             foreach (KeyValuePair<string, StoreLocation> locationKeyPair in mapData.locations)
             {
                 StoreLocation location = locationKeyPair.Value;
@@ -29,7 +26,7 @@ namespace Considition2023_Cs.Solutions
                 }
             }
 
-            GameData score = new Scoring().CalculateScore(string.Empty, solution, mapData, generalData);
+            GameData score = Scoring.CalculateScore(string.Empty, solution, mapData, generalData);
             score.GameScore.PrintJson();
             Console.WriteLine($"GameScore: {score.GameScore.Total.ToSI()}");
         }

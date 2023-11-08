@@ -1,36 +1,122 @@
 using System.Reflection;
 using System.Reflection.Metadata;
 using Considition2023_Cs;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
-public class GeneticSearch{
-
-        static Random Rnd = new Random(500);
-        public static async void Run(MapData data, GeneralData generalData)
+public class GeneticSearch
+{
+    static Random Rnd = new(500);
+    static Scoring Scoring = new();
+    const int MaxRnd = 2;
+    public static async void Run(MapData mapData, GeneralData generalData)
+    {
+        var size = mapData.locations.Count;
+        var male = RandomArray(size);
+        var female = RandomArray(size);
+        var childCount = 200;
+        var children = new (int, int)[childCount][];
+        for (int i = 0; i < childCount; i++)
         {
-            var size = data.locations.Count;
-            var male = RandomArray(size);
-            var female = RandomArray(size);
-            var children = new (int, int)[10][];
+            children[i] = new (int, int)[size];
+        }
+
+        var max = 0d;
+        (int Index, double Score)[] twoBest;
+        var best = new (int, int)[size];
+        for (int n = 0; n < 1000; n++)
+        {
             MakeChildren(children, male, female);
-        }
-
-        private static (int, int)[] RandomArray(int size){
+            twoBest = Evaluate(children, mapData, generalData);
+            male = children[twoBest[0].Index];
+            female = children[twoBest[1].Index];         
             
-            (int, int)[] a = new (int, int)[size];
-            for (int i = 0; i < size; i++)
+            if (twoBest[0].Score > max)
             {
-                a[i] = (Rnd.Next(5), Rnd.Next(5));
+                max = twoBest[0].Score;
+                // todo, store the array
+                Console.WriteLine($"{n}. {twoBest[0].Score.ToSI()}");
+                Array.Copy(children[twoBest[0].Index], best, best.Length);
             }
-            return a;
+
+            if (n % 100 == 0)
+            {
+                Console.WriteLine($"{n}. {max.ToSI()}");
+            }
         }
 
-        private static void MakeChildren((int, int)[][] children, (int, int)[] male, (int, int)[] female){
-            for (int i = 0; i < children.Length; i++)
+        var names = mapData.locations.Select(x => x.Value.LocationName).ToArray();
+        SubmitSolution solution = new();        
+        for (var j = 0; j < best.Length; j++)
+        {
+            if (best[j].Item1 > 0 || best[j].Item2 > 0)
             {
-                var split = Rnd.Next(male.Length);
-                Array.Copy(male,0, children[i], 0, split);
-                Array.Copy(female, split, children[i], split, female.Length - split);
-                var mutation = Rnd.Next(male.Length);
+                solution.Locations[names[j]] = new PlacedLocations()
+                {
+                    Freestyle3100Count = best[j].Item1,
+                    Freestyle9100Count = best[j].Item2
+                };
             }
         }
+
+        HttpClient client = new();
+        Api api = new(client);
+        GameData prodScore = await api.SumbitAsync(mapData.MapName, solution, HelperExtensions.Apikey);
+        Console.WriteLine($"GameId: {prodScore.Id}");
+        prodScore.GameScore.PrintJson();
+    }
+
+    private static (int Index , double Score)[] Evaluate((int, int)[][] children, MapData mapData, GeneralData generalData)
+    {
+        var topList = new List<(int Index, double Score)>();
+        var names = mapData.locations.Select(x => x.Value.LocationName).ToArray();
+
+        for (int i = 0;i < children.Length;i++)
+        //Parallel.For(0, children.Length, (int i) => 
+        {
+            SubmitSolution solution = new();
+            var child = children[i];
+            for (var j = 0; j < children[i].Length; j++)
+            {
+                if (child[j].Item1 > 0 || child[j].Item2 > 0)
+                {
+                    solution.Locations[names[j]] = new PlacedLocations()
+                    {
+                        Freestyle3100Count = child[j].Item1,
+                        Freestyle9100Count = child[j].Item2
+                    };
+                }
+            }
+
+            var score = Scoring.CalculateScore(string.Empty, solution, mapData, generalData);
+            topList.Add((i, score.GameScore.Total));
+        }
+        //);
+
+        topList = topList.OrderByDescending(x => x.Score).ToList();        
+
+        return topList.Take(2).ToArray();
+    }
+
+    private static (int, int)[] RandomArray(int size)
+    {
+
+        (int, int)[] a = new (int, int)[size];
+        for (int i = 0; i < size; i++)
+        {
+            a[i] = (Rnd.Next(MaxRnd), Rnd.Next(MaxRnd));
+        }
+        return a;
+    }
+
+    private static void MakeChildren((int, int)[][] children, (int, int)[] male, (int, int)[] female)
+    {
+        for (int i = 0; i < children.Length; i++)
+        {
+            var split = Rnd.Next(male.Length);
+            Array.Copy(male, 0, children[i], 0, split);
+            Array.Copy(female, split, children[i], split, female.Length - split);
+            var mutation = Rnd.Next(male.Length);
+            children[i][mutation] = (Rnd.Next(MaxRnd), Rnd.Next(MaxRnd));
+        }
+    }
 }

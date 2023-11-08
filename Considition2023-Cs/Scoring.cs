@@ -8,7 +8,7 @@ namespace Considition2023_Cs
 {
     internal class Scoring
     {
-        public GameData CalculateScore(string mapName, SubmitSolution solution, MapData mapEntity, GeneralData generalData)
+        public static GameData CalculateScore(string mapName, SubmitSolution solution, MapData mapEntity, GeneralData generalData)
         {
             GameData scored = new() 
             {
@@ -119,7 +119,7 @@ namespace Considition2023_Cs
             return scored;
         }
 
-        private Dictionary<string, StoreLocationScoring> DistributeSales(Dictionary<string, StoreLocationScoring> with, Dictionary<string, StoreLocationScoring> without, GeneralData generalData)
+        private static Dictionary<string, StoreLocationScoring> DistributeSales(Dictionary<string, StoreLocationScoring> with, Dictionary<string, StoreLocationScoring> without, GeneralData generalData)
         {
             foreach (KeyValuePair<string, StoreLocationScoring> kvpWithout in without)
             {

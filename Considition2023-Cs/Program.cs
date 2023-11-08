@@ -52,6 +52,7 @@ GeneralData generalData = await api.GetGeneralDataAsync();
 //OriginalExample.Run(mapData, generalData);
 //SimpleRamp.Run(mapData, generalData);
 //CapacityVolumeMatch.Run(mapData, generalData);
+GeneticSearch.Run(mapData, generalData);
 
 
 //var graph = new Graph("Test.dgrm", new[] { "S1", "S2", "S3" });

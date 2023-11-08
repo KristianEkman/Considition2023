@@ -57,7 +57,7 @@ namespace Considition2023_Cs.Solutions
                 }
             }
 
-            GameData score = new Scoring().CalculateScore(string.Empty, solution, mapData, generalData);
+            GameData score = Scoring.CalculateScore(string.Empty, solution, mapData, generalData);
             // score.GameScore.PrintJson();
 
             Console.WriteLine($"{largeLimit}\t{smallLimit}\t{score.GameScore.Total.ToSI()}");
