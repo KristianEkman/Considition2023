@@ -32,7 +32,7 @@ namespace Considition2023_Cs
         }
 
         public static int DistanceTo(this StoreLocationScoring location1, StoreLocationScoring location2)
-        {
+        {            
             double latitude1 = location1.Latitude;
             double longitude1 = location1.Longitude;
             double latitude2 = location2.Latitude;

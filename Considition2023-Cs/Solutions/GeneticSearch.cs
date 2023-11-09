@@ -3,10 +3,10 @@ using Considition2023_Cs;
 
 public class GeneticSearch
 {
-    static Random Rnd = new(500);    
+    static Random Rnd = new(777);    
     const int MaxRnd = 3;
     const int childCount = 300;
-    const int Runs = 3000;
+    const int Runs = 10;
 
     public static async void Run(MapData mapData, GeneralData generalData)
     {
@@ -32,7 +32,6 @@ public class GeneticSearch
             if (twoBest[0].Score > max)
             {
                 max = twoBest[0].Score;
-                Console.WriteLine($"{n}. {twoBest[0].Score.ToSI()}");
                 Array.Copy(children[twoBest[0].Index], best, best.Length);
             }
 
@@ -85,7 +84,7 @@ public class GeneticSearch
                 }
             }
 
-            var score = Scoring.CalculateScore(string.Empty, solution, mapData, generalData);
+            var score = Scoring.CalculateScore("", solution, mapData, generalData);
             lock(topList)
             {
                 topList.Add((i, score.GameScore.Total));

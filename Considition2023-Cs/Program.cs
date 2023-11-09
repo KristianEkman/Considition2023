@@ -1,6 +1,7 @@
 ﻿using Considition2023_Cs;
 using Considition2023_Cs.Solutions;
 using KristianEkman.GraphLib;
+using System.Diagnostics;
 using System.Text.Json.Serialization;
 
 if (string.IsNullOrWhiteSpace(HelperExtensions.Apikey))
@@ -52,8 +53,9 @@ GeneralData generalData = await api.GetGeneralDataAsync();
 //OriginalExample.Run(mapData, generalData);
 //SimpleRamp.Run(mapData, generalData);
 //CapacityVolumeMatch.Run(mapData, generalData);
+Stopwatch stopwatch = Stopwatch.StartNew();
 GeneticSearch.Run(mapData, generalData);
-
+Console.WriteLine("Took: " + stopwatch.ElapsedMilliseconds / 1000d);
 
 //var graph = new Graph("Test.dgrm", new[] { "S1", "S2", "S3" });
 //graph.Series[0].AddPoints((0, 0), (1,3), (5, 4));
