@@ -25,6 +25,7 @@ namespace Considition2023_Cs
                 {
                     scored.Locations[kvp.Key] = new()
                     {
+                        IndexKey = kvp.Value.IndexKey,
                         LocationName = kvp.Value.LocationName,
                         LocationType = kvp.Value.LocationType,
                         Latitude = kvp.Value.Latitude,
@@ -156,6 +157,14 @@ namespace Considition2023_Cs
             }
 
             return with;
+        }
+            
+        public static int[][] Distances {  get; set; } = new int[1000][];
+
+        internal static void NewDistancesCache()
+        {
+            for (int i = 0; i < Distances.Length; i++)
+                Distances[i] = new int[1000];
         }
     }
 }

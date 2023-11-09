@@ -6,7 +6,7 @@ public class GeneticSearch
     static Random Rnd = new(777);    
     const int MaxRnd = 3;
     const int childCount = 300;
-    const int Runs = 10;
+    const int Runs = 1000;
 
     public static async void Run(MapData mapData, GeneralData generalData)
     {

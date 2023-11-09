@@ -46,6 +46,7 @@ if (mapName is null)
 HttpClient client = new();
 Api api = new(client);
 MapData mapData = await api.GetMapDataAsync(mapName, HelperExtensions.Apikey);
+Scoring.NewDistancesCache();
 //mapData.PrintJson();
 GeneralData generalData = await api.GetGeneralDataAsync();
 //generalData.PrintJson();

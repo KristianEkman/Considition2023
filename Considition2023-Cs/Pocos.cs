@@ -45,6 +45,7 @@ namespace Considition2023_Cs
         public double Footfall { get; set; }
         public int footfallScale { get; set; }
         public double SalesVolume { get; set; }
+        internal int IndexKey { get; set; }
     }
 
     public class Border
@@ -153,6 +154,7 @@ namespace Considition2023_Cs
         public double GramCo2Savings { get; set; }
         public bool IsProfitable { get; set; } = false;
         public bool IsCo2Saving { get; set; } = false;
+        internal int IndexKey { get; set; }
     }
 
     public class Score

@@ -22,7 +22,19 @@ internal class Api
         HttpResponseMessage response = await _httpClient.SendAsync(request);
         response.EnsureSuccessStatusCode();
         string responseText = await response.Content.ReadAsStringAsync();
-        return JsonConvert.DeserializeObject<MapData>(responseText);
+        var data = JsonConvert.DeserializeObject<MapData>(responseText);
+        IndexLocations(data);
+        return data;
+    }
+
+    private void IndexLocations(MapData data)
+    {
+        int i = 0;
+        foreach (var loc in data.locations)
+        {
+            loc.Value.IndexKey = i;
+            i++;
+        }
     }
 
     public async Task<GeneralData> GetGeneralDataAsync()
