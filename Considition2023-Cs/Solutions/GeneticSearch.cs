@@ -1,4 +1,3 @@
-using System.Reflection;
 using Considition2023_Cs;
 
 public class GeneticSearch
@@ -7,6 +6,7 @@ public class GeneticSearch
     const int MaxRnd = 3;
     const int childCount = 300;
     const int Runs = 1000;
+    const int Mutations =  3;
 
     public static async void Run(MapData mapData, GeneralData generalData)
     {
@@ -110,13 +110,18 @@ public class GeneticSearch
 
     private static void MakeChildren((int, int)[][] children, (int, int)[] male, (int, int)[] female)
     {
-        for (int i = 0; i < children.Length; i++)
+        children[0] = male;
+        children[1] = female;
+        for (int i = 2; i < children.Length; i++)
         {
             var split = Rnd.Next(male.Length);
             Array.Copy(male, 0, children[i], 0, split);
             Array.Copy(female, split, children[i], split, female.Length - split);
-            var mutation = Rnd.Next(male.Length);
-            children[i][mutation] = (Rnd.Next(MaxRnd), Rnd.Next(MaxRnd));
+            for (int m = 0; m < Rnd.Next(Mutations); m++)
+            {                
+                var mutation = Rnd.Next(male.Length);
+                children[i][mutation] = (Rnd.Next(MaxRnd), Rnd.Next(MaxRnd));
+            }
         }
     }
 }

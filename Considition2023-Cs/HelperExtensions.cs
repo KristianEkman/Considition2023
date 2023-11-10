@@ -33,10 +33,10 @@ namespace Considition2023_Cs
 
         public static int DistanceTo(this StoreLocationScoring location1, StoreLocationScoring location2)
         {
-            if (Scoring.Distances[location1.IndexKey][location2.IndexKey] != 0)
-                return Scoring.Distances[location1.IndexKey][location2.IndexKey];
-            if (Scoring.Distances[location2.IndexKey][location1.IndexKey] != 0)
-                return Scoring.Distances[location2.IndexKey][location1.IndexKey];
+            // if (Scoring.Distances[location1.IndexKey][location2.IndexKey] != 0)
+            //     return Scoring.Distances[location1.IndexKey][location2.IndexKey];
+            // if (Scoring.Distances[location2.IndexKey][location1.IndexKey] != 0)
+            //     return Scoring.Distances[location2.IndexKey][location1.IndexKey];
 
             double latitude1 = location1.Latitude;
             double longitude1 = location1.Longitude;
@@ -54,11 +54,10 @@ namespace Considition2023_Cs
                 Math.Sin(longDelta / 2) * Math.Sin(longDelta / 2);
 
             double c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
-
             int distance = (int)Math.Round(r * c, 0);
 
-            Scoring.Distances[location1.IndexKey][location2.IndexKey] = distance;
-            Scoring.Distances[location2.IndexKey][location1.IndexKey] = distance;
+            // Scoring.Distances[location1.IndexKey][location2.IndexKey] = distance;
+            // Scoring.Distances[location2.IndexKey][location1.IndexKey] = distance;
 
             return distance;
         }

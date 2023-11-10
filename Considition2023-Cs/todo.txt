@@ -1,6 +1,8 @@
 TODO
 ====
 
+* Skicka till api:et var 100:e
+
 * optimera scoring-funktionen
 
 * Reda ut matematiskt, hur ser de olika beroendena ut.
@@ -9,33 +11,34 @@ Total = (KgCo2Savings * Co2PricePerKiloInSek + Earnings) * (1 + TotalFootfall)
 
 Co2PricePerKiloInSek: konstant
 
-KgCo2Savings för alla locations
+KgCo2Savings fÃ¶r alla locations
 	
 	Co2Savings = sales * (classic - refill) ---> konstanter i general data
 
 	sales = Min(Volume, Capacity)
-	Volume ökas för locations utan station beroende på WillingnessToTravel och avstådet till annan station.
+	Volume Ã¶kas fÃ¶r locations utan station beroende pÃ¥ WillingnessToTravel och avstÃ¥det till annan station.
 	
-	** INSIKT **:, om Capacity < Volume kommer man inte tjäna på att ha toma Locations runt en Station
+	** INSIKT **:, om Capacity < Volume kommer man inte tjï¿½na pï¿½ att ha toma Locations runt en Station
 
 	Earnings = Revenue - LeasingCost
 
 	TotalFootFall = Summan av alla FootFall
 
 
-* Spara High Score och lösning
+* Spara High Score och lÃ¶sning
 
-* Placering med hänsyn till närliggande.
+* Placering med hï¿½nsyn till nï¿½rliggande.
 
-* Räkna ut så att capaciteten blir så bra som möjligt
+* RÃ¤kna ut att capaciteten blir sÃ¥ bra som mÃ¶jligt
 
 DONE
 ====
 Graphviewer
 Enkel ramp
 Testa att api:et ger samma svar som api:et
-Genetisk sökning.
+Genetisk sÃ¶kning.
+ - sÃ¶kning, spara bÃ¶sta parents
 
-Frågor
+FrÃ¥gor
 ======
-Får man olika general data per karta?
+FÃ¶r man olika general data per karta?
