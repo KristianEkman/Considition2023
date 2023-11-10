@@ -1,11 +1,11 @@
 TODO
 ====
 
-* Skicka till api:et var 100:e
-
-* optimera scoring-funktionen
+* Optimera scoring-funktionen
 
 * Reda ut matematiskt, hur ser de olika beroendena ut.
+
+* Loopa olika seeds
 
 Total = (KgCo2Savings * Co2PricePerKiloInSek + Earnings) * (1 + TotalFootfall)
 
@@ -18,7 +18,7 @@ KgCo2Savings för alla locations
 	sales = Min(Volume, Capacity)
 	Volume ökas för locations utan station beroende på WillingnessToTravel och avstådet till annan station.
 	
-	** INSIKT **:, om Capacity < Volume kommer man inte tj�na p� att ha toma Locations runt en Station
+	** INSIKT **:, om Capacity < Volume kommer man inte tjäna på att ha tomma Locations runt en Station
 
 	Earnings = Revenue - LeasingCost
 
@@ -27,7 +27,7 @@ KgCo2Savings för alla locations
 
 * Spara High Score och lösning
 
-* Placering med h�nsyn till n�rliggande.
+* Placering med hänsyn till närliggande.
 
 * Räkna ut att capaciteten blir så bra som möjligt
 
@@ -37,8 +37,9 @@ Graphviewer
 Enkel ramp
 Testa att api:et ger samma svar som api:et
 Genetisk sökning.
- - sökning, spara bösta parents
+ - sökning, spara bästa parents
+Skicka till api:et var 100:e
 
 Frågor
 ======
-För man olika general data per karta?
+Får man olika general data per karta?

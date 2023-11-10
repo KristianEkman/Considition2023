@@ -3,17 +3,19 @@ using Considition2023_Cs;
 public class GeneticSearch
 {
     static Random Rnd = new(777);    
-    const int MaxRnd = 3;
-    const int childCount = 300;
+    const int MaxRnd = 4;
+    const int childCount = 500;
     const int Runs = 1000;
-    const int Mutations =  3;
+    const int Mutations =  2;
 
     public static async void Run(MapData mapData, GeneralData generalData)
     {
         var size = mapData.locations.Count;
         var male = RandomArray(size);
-        var female = RandomArray(size);        
+        var female = RandomArray(size);
         var children = new (int, int)[childCount][];
+        var names = mapData.locations.Select(x => x.Value.LocationName).ToArray();
+
         for (int i = 0; i < childCount; i++)
         {
             children[i] = new (int, int)[size];
@@ -27,8 +29,8 @@ public class GeneticSearch
             MakeChildren(children, male, female);
             twoBest = Evaluate(children, mapData, generalData);
             male = children[twoBest[0].Index];
-            female = children[twoBest[1].Index];         
-            
+            female = children[twoBest[1].Index];
+
             if (twoBest[0].Score > max)
             {
                 max = twoBest[0].Score;
@@ -38,11 +40,16 @@ public class GeneticSearch
             if (n % 100 == 0)
             {
                 Console.WriteLine($"{n}. {max.ToSI()}");
+                await Submit(mapData, names, best.Clone() as (int, int)[]);                
             }
         }
 
-        var names = mapData.locations.Select(x => x.Value.LocationName).ToArray();
-        SubmitSolution solution = new();        
+        await Submit(mapData, names, best);
+    }
+
+    private static async Task Submit(MapData mapData, string[] names, (int, int)[] best)
+    {
+        SubmitSolution solution = new();
         for (var j = 0; j < best.Length; j++)
         {
             if (best[j].Item1 > 0 || best[j].Item2 > 0)
@@ -58,8 +65,7 @@ public class GeneticSearch
         HttpClient client = new();
         Api api = new(client);
         GameData prodScore = await api.SumbitAsync(mapData.MapName, solution, HelperExtensions.Apikey);
-        Console.WriteLine($"GameId: {prodScore.Id}");
-        prodScore.GameScore.PrintJson();
+        Console.WriteLine($"GameId: {prodScore.Id} {prodScore.GameScore.Total}");
     }
 
     private static (int Index , double Score)[] Evaluate((int, int)[][] children, MapData mapData, GeneralData generalData)
