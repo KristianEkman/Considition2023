@@ -40,7 +40,7 @@ public class GeneticSearch
             if (n % 100 == 0)
             {
                 Console.WriteLine($"{n}. {max.ToSI()}");
-                await Submit(mapData, names, best.Clone() as (int, int)[]);                
+                Submit(mapData, names, best.Clone() as (int, int)[]);                
             }
         }
 
