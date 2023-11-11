@@ -24,6 +24,7 @@ internal class Api
         string responseText = await response.Content.ReadAsStringAsync();
         var data = JsonConvert.DeserializeObject<MapData>(responseText);
         IndexLocations(data);
+        Console.WriteLine($"{mapName} {data.locations.Count} Locations");        
         return data;
     }
 

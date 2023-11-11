@@ -3,9 +3,9 @@ using Considition2023_Cs;
 public class GeneticSearch
 {
     static Random Rnd = new(777);    
-    const int MaxRnd = 4;
-    const int childCount = 500;
-    const int Runs = 1000;
+    const int MaxRnd = 3;
+    const int childCount = 300;
+    const int Runs = 10000;
     const int Mutations =  2;
 
     public static async void Run(MapData mapData, GeneralData generalData)
@@ -24,8 +24,12 @@ public class GeneticSearch
         var max = 0d;
         (int Index, double Score)[] twoBest;
         var best = new (int, int)[size];
-        for (int n = 0; n < Runs; n++)
+        var maxHistory = new List<double>() { 0 };
+        //for (int n = 0; n < Runs; n++)
+        var n = 0;
+        while(true) 
         {
+            n++;
             MakeChildren(children, male, female);
             twoBest = Evaluate(children, mapData, generalData);
             male = children[twoBest[0].Index];
@@ -40,15 +44,25 @@ public class GeneticSearch
             if (n % 100 == 0)
             {
                 Console.WriteLine($"{n}. {max.ToSI()}");
-                Task.Run(() =>
+                if (max > maxHistory.LastOrDefault())
                 {
-                    Submit(mapData, names, best.Clone() as (int, int)[]);
-                });
-                
+                    maxHistory.Clear();
+                    Task.Run(() =>
+                    {
+                        Submit(mapData, names, best.Clone() as (int, int)[]);
+                    });
+                }
+                maxHistory.Add(max);
+                if (maxHistory.Count > 5)
+                {
+                    var seed = Rnd.Next(1000);
+                    Console.WriteLine("New Seed: " + seed);
+                    Rnd = new Random(seed);
+                    maxHistory.Clear();
+                    maxHistory.Add(max);
+                }
             }
         }
-
-        await Submit(mapData, names, best);
     }
 
     private static async Task Submit(MapData mapData, string[] names, (int, int)[] best)
@@ -69,7 +83,23 @@ public class GeneticSearch
         HttpClient client = new();
         Api api = new(client);
         GameData prodScore = await api.SumbitAsync(mapData.MapName, solution, HelperExtensions.Apikey);
-        Console.WriteLine($"GameId: {prodScore.Id} {prodScore.GameScore.Total}");
+        var result = $"\r\n{mapData.MapName}: {prodScore.Id} {prodScore.GameScore.Total.ToSI()} at {DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff")}";
+        Console.WriteLine(result);
+        File.AppendAllText("resultslog.txt", result);
+        
+        var F3100count = solution.Locations.GroupBy(x => x.Value.Freestyle3100Count).OrderBy(x => x.Key);
+        Console.WriteLine("F3100");
+        foreach (var item in F3100count)
+        {
+            Console.WriteLine($"{item.Key}st: {item.Count()} places");
+        }
+
+        var F9100count = solution.Locations.GroupBy(x => x.Value.Freestyle9100Count).OrderBy(x => x.Key);
+        Console.WriteLine("\nF9100");
+        foreach (var item in F9100count)
+        {
+            Console.WriteLine($"{item.Key}st: {item.Count()}");
+        }
     }
 
     private static (int Index , double Score)[] Evaluate((int, int)[][] children, MapData mapData, GeneralData generalData)

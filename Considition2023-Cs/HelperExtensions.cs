@@ -15,6 +15,8 @@ namespace Considition2023_Cs
 
         public static string ToSI(this double d, string format = "0.###")
         {
+            if (d == 0)
+                return "0";
             char[] incPrefixes = new[] { 'k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y' };
             char[] decPrefixes = new[] { 'm', '\u03bc', 'n', 'p', 'f', 'a', 'z', 'y' };
 

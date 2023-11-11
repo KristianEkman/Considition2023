@@ -198,5 +198,114 @@ namespace Considition2023_Cs
 
             return distance;
         }
+
+        public static GameData CalculateFake(string mapName, SubmitSolution solution, MapData mapEntity, GeneralData generalData)
+        {
+            GameData scored = new()
+            {
+                MapName = mapName,
+                TeamId = Guid.Empty,
+                TeamName = string.Empty,
+                Locations = new(),
+                GameScore = new()
+            };
+            Dictionary<string, StoreLocationScoring> locationListNoRefillStation = new();
+            foreach (KeyValuePair<string, StoreLocation> kvp in mapEntity.locations)
+            {
+                if (solution.Locations.ContainsKey(kvp.Key) == true)
+                {
+                    scored.Locations[kvp.Key] = new()
+                    {
+                        IndexKey = kvp.Value.IndexKey,
+                        LocationName = kvp.Value.LocationName,
+                        LocationType = kvp.Value.LocationType,
+                        Latitude = kvp.Value.Latitude,
+                        Longitude = kvp.Value.Longitude,
+                        Footfall = kvp.Value.Footfall,
+                        Freestyle3100Count = solution.Locations[kvp.Key].Freestyle3100Count,
+                        Freestyle9100Count = solution.Locations[kvp.Key].Freestyle9100Count,
+
+                        SalesVolume = kvp.Value.SalesVolume * generalData.RefillSalesFactor,
+                        // await GetSalesVolume(kvp.Value.LocationType) ??
+                        //     throw new Exception(string.Format("Location: {0}, have an invalid location type: {1}", kvp.Key, kvp.Value.LocationType)),
+
+                        SalesCapacity = solution.Locations[kvp.Key].Freestyle3100Count * generalData.Freestyle3100Data.RefillCapacityPerWeek +
+                            solution.Locations[kvp.Key].Freestyle9100Count * generalData.Freestyle9100Data.RefillCapacityPerWeek,
+
+                        LeasingCost = solution.Locations[kvp.Key].Freestyle3100Count * generalData.Freestyle3100Data.LeasingCostPerWeek +
+                            solution.Locations[kvp.Key].Freestyle9100Count * generalData.Freestyle9100Data.LeasingCostPerWeek
+                    };
+
+                    if (scored.Locations[kvp.Key].SalesCapacity > 0 == false)
+                    {
+                        throw new Exception(string.Format("You are not allowed to submit locations with no refill stations. Remove or alter location : {0}", kvp.Value.LocationName));
+                    }
+                }
+                else
+                    locationListNoRefillStation[kvp.Key] = new()
+                    {
+                        IndexKey = kvp.Value.IndexKey,
+                        LocationName = kvp.Value.LocationName,
+                        LocationType = kvp.Value.LocationType,
+                        Latitude = kvp.Value.Latitude,
+                        Longitude = kvp.Value.Longitude,
+                        SalesVolume = kvp.Value.SalesVolume * generalData.RefillSalesFactor,
+                        //await GetSalesVolume(kvp.Value.LocationType) ?? throw new Exception(string.Format("Location: {0}, have an invalid location type: {1}", kvp.Key, kvp.Value.LocationType)),
+                    };
+            }
+
+            if (scored.Locations.Count == 0)
+                throw new Exception(string.Format("No valid locations with refill stations were placed for map: {0}", mapName));
+            scored.Locations = DistributeSales(scored.Locations, locationListNoRefillStation, generalData);
+
+            foreach (KeyValuePair<string, StoreLocationScoring> kvp in scored.Locations)
+            {
+                kvp.Value.SalesVolume = Math.Round(kvp.Value.SalesVolume, 0);
+
+                double sales = kvp.Value.SalesVolume;
+                if (kvp.Value.SalesCapacity < kvp.Value.SalesVolume) { sales = kvp.Value.SalesCapacity; }
+
+                kvp.Value.GramCo2Savings = sales * (generalData.ClassicUnitData.Co2PerUnitInGrams - generalData.RefillUnitData.Co2PerUnitInGrams);
+                scored.GameScore.KgCo2Savings += kvp.Value.GramCo2Savings / 1000; //Kristian: * 1000 (eller?)
+                if (kvp.Value.GramCo2Savings > 0)
+                {
+                    kvp.Value.IsCo2Saving = true;
+                }
+
+                kvp.Value.Revenue = sales * generalData.RefillUnitData.ProfitPerUnit;
+                scored.TotalRevenue += kvp.Value.Revenue;
+
+                kvp.Value.Earnings = kvp.Value.Revenue - kvp.Value.LeasingCost;
+                if (kvp.Value.Earnings > 0)
+                {
+                    kvp.Value.IsProfitable = true;
+                }
+
+                scored.TotalLeasingCost += kvp.Value.LeasingCost;
+
+                scored.TotalFreestyle3100Count += kvp.Value.Freestyle3100Count;
+                scored.TotalFreestyle9100Count += kvp.Value.Freestyle9100Count;
+
+                scored.GameScore.TotalFootfall += kvp.Value.Footfall;
+            }
+
+            //Just some rounding for nice whole numbers
+
+            scored.GameScore.KgCo2Savings =
+                scored.GameScore.KgCo2Savings
+                - scored.TotalFreestyle3100Count * generalData.Freestyle3100Data.StaticCo2
+                - scored.TotalFreestyle9100Count * generalData.Freestyle9100Data.StaticCo2;
+
+            //Calculate Earnings
+            scored.GameScore.Earnings = scored.TotalRevenue - scored.TotalLeasingCost;
+
+            //Calculate total score
+            scored.GameScore.Total =
+                (scored.GameScore.KgCo2Savings * generalData.Co2PricePerKiloInSek + scored.GameScore.Earnings) *
+                (1 + scored.GameScore.TotalFootfall);
+
+            return scored;
+        }
+
     }
 }
