@@ -56,7 +56,22 @@ GeneralData generalData = await api.GetGeneralDataAsync();
 //SimpleRamp.Run(mapData, generalData);
 //CapacityVolumeMatch.Run(mapData, generalData);
 Stopwatch stopwatch = Stopwatch.StartNew();
-GeneticSearch.Run(mapData, generalData);
+
+// Optimize for high total score
+GeneticSearch.Run(mapData, generalData, true, x => x.Total, false);
+
+// Optimize for high CO2 savings
+//GeneticSearch.Run(mapData, generalData, true, x => x.KgCo2Savings, false);
+
+// Optimize for high earnings
+//GeneticSearch.Run(mapData, generalData, true, x => x.Earnings, false);
+
+// Optimize for score = 1337
+//GeneticSearch.Run(mapData, generalData, false, x => Math.Abs(1337d - x.Total), true);
+
+// Optimize for score = 1
+//GeneticSearch.Run(mapData, generalData, false, x => Math.Abs(1d - x.Total), true);
+
 Console.WriteLine("Took: " + stopwatch.ElapsedMilliseconds / 1000d);
 
 //var graph = new Graph("Test.dgrm", new[] { "S1", "S2", "S3" });

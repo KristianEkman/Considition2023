@@ -8,7 +8,7 @@ public class GeneticSearch
     const int Runs = 10000;
     const int Mutations =  2;
 
-    public static async void Run(MapData mapData, GeneralData generalData)
+    public static async void Run(MapData mapData, GeneralData generalData, bool periodicSubmit, Func<Score, double> optimizeFor, bool optimizeLow)
     {
         var size = mapData.locations.Count;
         var male = RandomArray(size);
@@ -21,38 +21,53 @@ public class GeneticSearch
             children[i] = new (int, int)[size];
         }
 
-        var max = 0d;
-        (int Index, double Score)[] twoBest;
+        var bestValue = optimizeLow ? double.MaxValue : 0d;
+        (int Index, double Total, double Earnings, double KgCo2Savings, double v) bestScore = default;
+        (int Index, double Total, double Earnings, double KgCo2Savings, double v)[] twoBest;
         var best = new (int, int)[size];
-        var maxHistory = new List<double>() { 0 };
+        var maxHistory = new List<double>() { bestValue };
         //for (int n = 0; n < Runs; n++)
         var n = 0;
         while(true) 
         {
             n++;
             MakeChildren(children, male, female);
-            twoBest = Evaluate(children, mapData, generalData);
+            twoBest = Evaluate(children, mapData, generalData, optimizeFor, optimizeLow);
             male = children[twoBest[0].Index];
             female = children[twoBest[1].Index];
 
-            if (twoBest[0].Score > max)
+            var isBetter = optimizeLow
+                ? twoBest[0].v < bestValue
+                : twoBest[0].v > bestValue;
+            if (isBetter)
             {
-                max = twoBest[0].Score;
+                bestValue = twoBest[0].v;
+                bestScore = twoBest[0];
                 Array.Copy(children[twoBest[0].Index], best, best.Length);
+
+                if (optimizeLow && bestValue == 0d)
+                {
+                    // found the target score
+                    await Submit(mapData, names, best.Clone() as (int, int)[]);
+                    break;
+                }
             }
 
             if (n % 100 == 0)
             {
-                Console.WriteLine($"{n}. {max.ToSI()}");
-                if (max > maxHistory.LastOrDefault())
+                Console.WriteLine($"{n}. {bestScore.Total.ToSI()}pt, {bestScore.Earnings.ToSI()}kr, {bestScore.KgCo2Savings}kg");
+                var betterThanPreviousBest = optimizeLow
+                    ? bestValue < maxHistory.LastOrDefault()
+                    : bestValue > maxHistory.LastOrDefault();
+                if (betterThanPreviousBest)
                 {
                     maxHistory.Clear();
-                    Task.Run(() =>
+                    if (periodicSubmit)
                     {
                         Submit(mapData, names, best.Clone() as (int, int)[]);
-                    });
+                    }
                 }
-                maxHistory.Add(max);
+                maxHistory.Add(bestValue);
                 if (maxHistory.Count > 5)
                 {
                     var seed = Rnd.Next(1000);
@@ -102,39 +117,41 @@ public class GeneticSearch
         }
     }
 
-    private static (int Index , double Score)[] Evaluate((int, int)[][] children, MapData mapData, GeneralData generalData)
+    private static (int Index, double Total, double Earnings, double KgCo2Savings, double v)[] Evaluate(
+        (int, int)[][] children, MapData mapData, GeneralData generalData, Func<Score, double> optimizeFor, bool optimizeLow)
     {
-        var topList = new List<(int Index, double Score)>();
+        var topList = new List<(int Index, double Total, double Earnings, double KgCo2Savings, double v)>();
         var names = mapData.locations.Select(x => x.Value.LocationName).ToArray();
 
         //for (int i = 0;i < children.Length;i++)
-        Parallel.For(0, children.Length, (int i) => 
-        {
-            SubmitSolution solution = new();
-            var child = children[i];
-            for (var j = 0; j < children[i].Length; j++)
+        Parallel.For(0, children.Length, (int i) =>
             {
-                if (child[j].Item1 > 0 || child[j].Item2 > 0)
+                SubmitSolution solution = new();
+                var child = children[i];
+                for (var j = 0; j < children[i].Length; j++)
                 {
-                    solution.Locations[names[j]] = new PlacedLocations()
+                    if (child[j].Item1 > 0 || child[j].Item2 > 0)
                     {
-                        Freestyle3100Count = child[j].Item1,
-                        Freestyle9100Count = child[j].Item2
-                    };
+                        solution.Locations[names[j]] = new PlacedLocations()
+                        {
+                            Freestyle3100Count = child[j].Item1,
+                            Freestyle9100Count = child[j].Item2
+                        };
+                    }
+                }
+
+                var score = Scoring.CalculateScore("", solution, mapData, generalData);
+                var v = optimizeFor(score.GameScore);
+                lock (topList)
+                {
+                    topList.Add((i, score.GameScore.Total, score.GameScore.Earnings, score.GameScore.KgCo2Savings, v));
                 }
             }
-
-            var score = Scoring.CalculateScore("", solution, mapData, generalData);
-            lock(topList)
-            {
-                topList.Add((i, score.GameScore.Total));
-            }
-        }
         );
 
-        topList = topList.OrderByDescending(x => x.Score).ToList();        
-
-        return topList.Take(2).ToArray();
+        return optimizeLow
+            ? topList.OrderBy(x => x.v).Take(2).ToArray()
+            : topList.OrderByDescending(x => x.v).Take(2).ToArray();
     }
 
     private static (int, int)[] RandomArray(int size)
