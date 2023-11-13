@@ -2,11 +2,11 @@ using Considition2023_Cs;
 
 public class GeneticSearch
 {
-    static Random Rnd = new(777);    
-    const int MaxRnd = 3;
+    static Random Rnd = new(777);
+    const int MaxStations = 3;
     const int childCount = 300;
     const int Runs = 10000;
-    const int Mutations =  2;
+    const int Mutations = 2;
 
     public static async void Run(MapData mapData, GeneralData generalData, bool periodicSubmit, Func<Score, double> optimizeFor, bool optimizeLow)
     {
@@ -28,7 +28,7 @@ public class GeneticSearch
         var maxHistory = new List<double>() { bestValue };
         //for (int n = 0; n < Runs; n++)
         var n = 0;
-        while(true) 
+        while (true)
         {
             n++;
             MakeChildren(children, male, female);
@@ -74,7 +74,7 @@ public class GeneticSearch
                     Console.WriteLine("New Seed: " + seed);
                     Rnd = new Random(seed);
                     maxHistory.Clear();
-                    maxHistory.Add(max);
+                    maxHistory.Add(bestValue);
                 }
             }
         }
@@ -101,7 +101,7 @@ public class GeneticSearch
         var result = $"\r\n{mapData.MapName}: {prodScore.Id} {prodScore.GameScore.Total.ToSI()} at {DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff")}";
         Console.WriteLine(result);
         File.AppendAllText("resultslog.txt", result);
-        
+
         var F3100count = solution.Locations.GroupBy(x => x.Value.Freestyle3100Count).OrderBy(x => x.Key);
         Console.WriteLine("F3100");
         foreach (var item in F3100count)
@@ -160,7 +160,7 @@ public class GeneticSearch
         (int, int)[] a = new (int, int)[size];
         for (int i = 0; i < size; i++)
         {
-            a[i] = (Rnd.Next(MaxRnd), Rnd.Next(MaxRnd));
+            a[i] = (Rnd.Next(MaxStations), Rnd.Next(MaxStations));
         }
         return a;
     }
@@ -175,9 +175,9 @@ public class GeneticSearch
             Array.Copy(male, 0, children[i], 0, split);
             Array.Copy(female, split, children[i], split, female.Length - split);
             for (int m = 0; m < Rnd.Next(Mutations); m++)
-            {                
+            {
                 var mutation = Rnd.Next(male.Length);
-                children[i][mutation] = (Rnd.Next(MaxRnd), Rnd.Next(MaxRnd));
+                children[i][mutation] = (Rnd.Next(MaxStations), Rnd.Next(MaxStations));
             }
         }
     }
