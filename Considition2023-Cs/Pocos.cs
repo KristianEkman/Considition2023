@@ -25,6 +25,7 @@ namespace Considition2023_Cs
         public double Latitude { get; set; }
         public double Longitude { get; set; }
         public string LocationType { get; set; } = string.Empty;
+        internal int IndexKey { get; set; }
     }
 
 
@@ -50,6 +51,7 @@ namespace Considition2023_Cs
         public double Footfall { get; set; }
         public int footfallScale { get; set; }
         public double SalesVolume { get; set; }
+        internal int IndexKey { get; set; }
     }
 
     public class Border
@@ -67,6 +69,7 @@ namespace Considition2023_Cs
         public double Latitude { get; set; }
         public double Longitude { get; set; }
         public double Footfall { get; set; }
+        internal int IndexKey { get; set; }
     }
 
 
@@ -159,6 +162,7 @@ namespace Considition2023_Cs
         public double GramCo2Savings { get; set; }
         public bool IsProfitable { get; set; } = false;
         public bool IsCo2Saving { get; set; } = false;
+        public int IndexKey { get; internal set; }
     }
 
     public class Score

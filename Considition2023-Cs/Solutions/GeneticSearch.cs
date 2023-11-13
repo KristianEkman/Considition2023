@@ -4,7 +4,7 @@ public class GeneticSearch
 {
     static Random Rnd = new(777);
     const int MaxStations = 3;
-    const int childCount = 100;    
+    const int childCount = 500;    
     const int Mutations = 2;
 
     public static async void Run(MapData mapData, GeneralData generalData, bool periodicSubmit, Func<Score, double> optimizeFor, bool optimizeLow)
@@ -14,6 +14,12 @@ public class GeneticSearch
         var female = RandomArray(size);
         var children = new (int, int)[childCount][];
         var names = mapData.locations.Select(x => x.Value.LocationName).ToArray();
+        Scoring.NewDistancesCache();
+        var k = 0;
+        foreach (var loc in mapData.locations)
+            loc.Value.IndexKey = k++;        
+        foreach (var hs in mapData.Hotspots)
+            hs.IndexKey = k++;
 
         for (int i = 0; i < childCount; i++)
         {

@@ -52,7 +52,7 @@ Api api = new(client);
 MapData mapData = await api.GetMapDataAsync(mapName, apikey);
 GeneralData generalData = await api.GetGeneralDataAsync();
 
-GeneticSearch.Run(mapData, generalData, true, x => x.Total, false);
+GeneticSearch.Run(mapData, generalData, false, x => x.Total, false);
 
 SubmitSolution solution = new() 
 {

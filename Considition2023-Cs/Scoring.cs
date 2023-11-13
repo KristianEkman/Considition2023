@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Considition2023_Cs
 {
-    internal class Scoring
+    internal static class Scoring
     {
         public static List<string> SandBoxMaps { get; } = new List<string> { "s-sandbox", "g-sandbox" };
 
@@ -48,7 +48,8 @@ namespace Considition2023_Cs
                                 solution.Locations[kvp.Key].Freestyle9100Count * generalData.Freestyle9100Data.RefillCapacityPerWeek,
 
                             LeasingCost = solution.Locations[kvp.Key].Freestyle3100Count * generalData.Freestyle3100Data.LeasingCostPerWeek +
-                                solution.Locations[kvp.Key].Freestyle9100Count * generalData.Freestyle9100Data.LeasingCostPerWeek
+                                solution.Locations[kvp.Key].Freestyle9100Count * generalData.Freestyle9100Data.LeasingCostPerWeek,
+                            IndexKey = kvp.Value.IndexKey
                         };
 
                         if (scoredSolution.Locations[kvp.Key].SalesCapacity > 0 == false)
@@ -65,6 +66,7 @@ namespace Considition2023_Cs
                             Latitude = kvp.Value.Latitude,
                             Longitude = kvp.Value.Longitude,
                             SalesVolume = kvp.Value.SalesVolume * generalData.RefillSalesFactor,
+                            IndexKey = kvp.Value.IndexKey
                         };
                 }
 
@@ -147,9 +149,7 @@ namespace Considition2023_Cs
 
                 foreach (KeyValuePair<string, StoreLocationScoring> kvpWith in with)
                 {
-                    int distance = DistanceBetweenPoint(
-                        kvpWithout.Value.Latitude, kvpWithout.Value.Longitude, kvpWith.Value.Latitude, kvpWith.Value.Longitude
-                    );
+                    int distance = kvpWithout.Value.DistanceBetweenPoint(kvpWith.Value);
                     if (distance < generalData.WillingnessToTravelInMeters)
                     {
                         distributeSalesTo[kvpWith.Value.LocationName] = distance;
@@ -184,9 +184,8 @@ namespace Considition2023_Cs
             {
                 foreach (Hotspot hotspot in mapEntity.Hotspots)
                 {
-                    double distanceInMeters = DistanceBetweenPoint(
-                        hotspot.Latitude, hotspot.Longitude, kvpLoc.Value.Latitude, kvpLoc.Value.Longitude
-                    );
+                    double distanceInMeters = hotspot.DistanceBetweenPoint(kvpLoc.Value);
+                        
                     double maxSpread = hotspot.Spread;
                     if (distanceInMeters <= maxSpread)
                     {
@@ -243,7 +242,9 @@ namespace Considition2023_Cs
                     SalesCapacity = request.Locations[kvpLoc.Key].Freestyle3100Count * generalData.Freestyle3100Data.RefillCapacityPerWeek +
                                 request.Locations[kvpLoc.Key].Freestyle9100Count * generalData.Freestyle9100Data.RefillCapacityPerWeek,
                     LeasingCost = request.Locations[kvpLoc.Key].Freestyle3100Count * generalData.Freestyle3100Data.LeasingCostPerWeek +
-                                request.Locations[kvpLoc.Key].Freestyle9100Count * generalData.Freestyle9100Data.LeasingCostPerWeek
+                                request.Locations[kvpLoc.Key].Freestyle9100Count * generalData.Freestyle9100Data.LeasingCostPerWeek,
+                    IndexKey = kvpLoc.Value.IndexKey
+
                 };
                 locations.Add(kvpLoc.Key, scoredSolution);
             }
@@ -255,9 +256,8 @@ namespace Considition2023_Cs
                 {
                     if (kvpScope.Key != kvpSurrounding.Key)
                     {
-                        int distance = DistanceBetweenPoint(
-                            kvpScope.Value.Latitude, kvpScope.Value.Longitude, kvpSurrounding.Value.Latitude, kvpSurrounding.Value.Longitude
-                        );
+                        int distance = kvpScope.Value.DistanceBetweenPoint(kvpSurrounding.Value);
+                            
                         if (distance < generalData.WillingnessToTravelInMeters)
                         {
                             count++;
@@ -280,9 +280,8 @@ namespace Considition2023_Cs
                 {
                     if (kvpScope.Key != kvpSurrounding.Key)
                     {
-                        int distance = DistanceBetweenPoint(
-                            kvpScope.Value.Latitude, kvpScope.Value.Longitude, kvpSurrounding.Value.Latitude, kvpSurrounding.Value.Longitude
-                        );
+                        int distance = kvpScope.Value.DistanceBetweenPoint(kvpSurrounding.Value);
+                            
                         if (distance < generalData.WillingnessToTravelInMeters)
                         {
                             count++;
@@ -382,8 +381,18 @@ namespace Considition2023_Cs
             return null;
         }
 
-        private static int DistanceBetweenPoint(double latitude1, double longitude1, double latitude2, double longitude2)
+        private static int DistanceBetweenPoint(this StoreLocationScoring location1, StoreLocationScoring location2)
         {
+            if (Scoring.Distances[location1.IndexKey][location2.IndexKey] != 0)
+                return Scoring.Distances[location1.IndexKey][location2.IndexKey];
+            if (Scoring.Distances[location2.IndexKey][location1.IndexKey] != 0)
+                return Scoring.Distances[location2.IndexKey][location1.IndexKey];
+
+            double latitude1 = location1.Latitude;
+            double longitude1 = location1.Longitude;
+            double latitude2 = location2.Latitude;
+            double longitude2 = location2.Longitude;
+
             double r = 6371e3;
             double latRadian1 = latitude1 * Math.PI / 180;
             double latRadian2 = latitude2 * Math.PI / 180;
@@ -399,7 +408,52 @@ namespace Considition2023_Cs
 
             int distance = (int)Math.Round(r * c, 0);
 
+            Scoring.Distances[location1.IndexKey][location2.IndexKey] = distance;
+            Scoring.Distances[location2.IndexKey][location1.IndexKey] = distance;
+
             return distance;
         }
+
+        private static int DistanceBetweenPoint(this Hotspot location1, StoreLocationScoring location2)
+        {
+            if (Scoring.Distances[location1.IndexKey][location2.IndexKey] != 0)
+                return Scoring.Distances[location1.IndexKey][location2.IndexKey];
+            if (Scoring.Distances[location2.IndexKey][location1.IndexKey] != 0)
+                return Scoring.Distances[location2.IndexKey][location1.IndexKey];
+
+            double latitude1 = location1.Latitude;
+            double longitude1 = location1.Longitude;
+            double latitude2 = location2.Latitude;
+            double longitude2 = location2.Longitude;
+
+            double r = 6371e3;
+            double latRadian1 = latitude1 * Math.PI / 180;
+            double latRadian2 = latitude2 * Math.PI / 180;
+
+            double latDelta = (latitude2 - latitude1) * Math.PI / 180;
+            double longDelta = (longitude2 - longitude1) * Math.PI / 180;
+
+            double a = Math.Sin(latDelta / 2) * Math.Sin(latDelta / 2) +
+                Math.Cos(latRadian1) * Math.Cos(latRadian2) *
+                Math.Sin(longDelta / 2) * Math.Sin(longDelta / 2);
+
+            double c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+
+            int distance = (int)Math.Round(r * c, 0);
+
+            Scoring.Distances[location1.IndexKey][location2.IndexKey] = distance;
+            Scoring.Distances[location2.IndexKey][location1.IndexKey] = distance;
+
+            return distance;
+        }
+
+        public static int[][] Distances { get; set; } = new int[5000][];
+
+        internal static void NewDistancesCache()
+        {
+            for (int i = 0; i < Distances.Length; i++)
+                Distances[i] = new int[5000];
+        }
+
     }
 }
