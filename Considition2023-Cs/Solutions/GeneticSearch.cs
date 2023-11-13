@@ -4,8 +4,7 @@ public class GeneticSearch
 {
     static Random Rnd = new(777);
     const int MaxStations = 3;
-    const int childCount = 300;
-    const int Runs = 10000;
+    const int childCount = 100;    
     const int Mutations = 2;
 
     public static async void Run(MapData mapData, GeneralData generalData, bool periodicSubmit, Func<Score, double> optimizeFor, bool optimizeLow)

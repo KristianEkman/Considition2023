@@ -22,20 +22,7 @@ internal class Api
         HttpResponseMessage response = await _httpClient.SendAsync(request);
         response.EnsureSuccessStatusCode();
         string responseText = await response.Content.ReadAsStringAsync();
-        var data = JsonConvert.DeserializeObject<MapData>(responseText);
-        IndexLocations(data);
-        Console.WriteLine($"{mapName} {data.locations.Count} Locations");        
-        return data;
-    }
-
-    private void IndexLocations(MapData data)
-    {
-        int i = 0;
-        foreach (var loc in data.locations)
-        {
-            loc.Value.IndexKey = i;
-            i++;
-        }
+        return JsonConvert.DeserializeObject<MapData>(responseText);
     }
 
     public async Task<GeneralData> GetGeneralDataAsync()
@@ -63,6 +50,7 @@ internal class Api
         request.Content = new StringContent(JsonConvert.SerializeObject(solution), System.Text.Encoding.UTF8, "application/json");
         HttpResponseMessage response = _httpClient.Send(request);
         string responseText = await response.Content.ReadAsStringAsync();
+        response.EnsureSuccessStatusCode();
         return JsonConvert.DeserializeObject<GameData>(responseText);
     }
 }   
