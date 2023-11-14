@@ -181,8 +181,7 @@ public class GeneticSearch
             Array.Copy(female, split, children[i], split, female.Length - split);
             for (int m = 0; m < Rnd.Next(Mutations); m++)
             {
-                var mutation = Rnd.Next(male.Length);
-                children[i][mutation] = (Rnd.Next(MaxStations), Rnd.Next(MaxStations));
+                children[i][m] = (Rnd.Next(MaxStations), Rnd.Next(MaxStations));
             }
         }
     }
