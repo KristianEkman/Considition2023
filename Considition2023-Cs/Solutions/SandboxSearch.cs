@@ -1,4 +1,5 @@
 using Considition2023_Cs;
+using Considition2023_Cs.Solutions;
 
 public class SandboxSearch
 {
@@ -52,7 +53,7 @@ public class SandboxSearch
                 maxHistory.Clear();
                 if (periodicSubmit)
                 {
-                    await Submit(mapData, best.Clone() as ChildItem[]);
+                    await Submit(mapData, best.Clone() as ChildItem[], bestValue);
                 }
             }
             maxHistory.Add(bestValue);
@@ -150,7 +151,7 @@ public class SandboxSearch
         return children;
     }
 
-    private static async Task Submit(MapData mapData, ChildItem[] best)
+    private static async Task Submit(MapData mapData, ChildItem[] best, double localScore)
     {
         SubmitSolution solution = new();
         for (var j = 0; j < best.Length; j++)
@@ -169,28 +170,8 @@ public class SandboxSearch
         }
 
         Scoring.SandboxValidation(mapData.MapName, solution, mapData);
-
-
-        HttpClient client = new();
-        Api api = new(client);
-        GameData prodScore = await api.SumbitAsync(mapData.MapName, solution, HelperExtensions.Apikey);
-        var result = $"\r\n{mapData.MapName}: {prodScore.Id} {prodScore.GameScore.Total.ToSI()} at {DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff")}";
-        Console.WriteLine(result);
-        File.AppendAllText("resultslog.txt", result);
-
-        var F3100count = solution.Locations.GroupBy(x => x.Value.Freestyle3100Count).OrderBy(x => x.Key);
-        Console.WriteLine("F3100");
-        foreach (var item in F3100count)
-        {
-            Console.WriteLine($"{item.Key}st: {item.Count()} places");
-        }
-
-        var F9100count = solution.Locations.GroupBy(x => x.Value.Freestyle9100Count).OrderBy(x => x.Key);
-        Console.WriteLine("\nF9100");
-        foreach (var item in F9100count)
-        {
-            Console.WriteLine($"{item.Key}st: {item.Count()}");
-        }
+        await SolutionBase.SubmitSolution(mapData, localScore, solution);
+        
     }
 
     private static (int Index, double Total, double Earnings, double KgCo2Savings, double v)[] Evaluate(

@@ -1,9 +1,8 @@
 TODO
 ====
 
-* Sätta submitgräns på träningsbanor
-* Jämföra prodscore och local score, printa diff.
-
+* Söka fram bästa position innan Station Count
+* Sanbox multi thread
 
 * Optimera scoring-funktionen
 
@@ -31,6 +30,8 @@ Genetisk sökning.
 Skicka till api:et var 100:e
 Spara High Score och lösning
 Loopa olika seeds
+Sätta submitgräns på träningsbanor
+Jämföra prodscore och local score, printa diff.
 
 Frågor
 ======

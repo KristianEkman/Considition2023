@@ -23,7 +23,7 @@ Console.WriteLine($"10: {MapNames.GSandbox}");
 Console.WriteLine($"11: {MapNames.SSandbox}");
 
 Console.Write("Select the map you wish to play: ");
-string option = "10";// Console.ReadLine();
+string option = Console.ReadLine();
 
 var mapName = option switch
 {
@@ -53,9 +53,9 @@ MapData mapData = await api.GetMapDataAsync(mapName, apikey);
 GeneralData generalData = await api.GetGeneralDataAsync();
 
 if (isSandBox)
-    SandboxSearch.Run(mapData, generalData, false);
+    SandboxSearch.Run(mapData, generalData, true);
 else
-    GeneticSearch.Run(mapData, generalData, false, x => x.Total, false);
+    GeneticSearch.Run(mapData, generalData, true, x => x.Total, false);
 
 //SubmitSolution solution = new() 
 //{
