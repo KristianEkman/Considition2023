@@ -12,8 +12,8 @@ public class GeneticSearch
     public static async void Run(MapData mapData, GeneralData generalData, bool periodicSubmit, Func<Score, double> optimizeFor, bool optimizeLow)
     {
         var size = mapData.locations.Count;
-        var fileName = mapData.MapName + ".json";
-        var male =  RandomArray(size); //File.Exists(fileName) ? ReadBestFromFile(fileName) :
+        var fileName = mapData.MapName + ".txt";
+        var male =  File.Exists(fileName) ? ReadBestFromFile(fileName) : RandomArray(size);
         var female = RandomArray(size);
         var children = new (int, int)[childCount][];
         var names = mapData.locations.Select(x => x.Value.LocationName).ToArray();
@@ -73,7 +73,7 @@ public class GeneticSearch
                     if (periodicSubmit)
                     {
                         Submit(mapData, names, best.Clone() as (int, int)[], bestValue);
-                        // File.WriteAllText(mapData.MapName + ".json", string.Join(",", best));
+                        File.WriteAllText(mapData.MapName + ".txt", string.Join(";", best));
                     }
                 }
                 maxHistory.Add(bestValue);
@@ -91,7 +91,14 @@ public class GeneticSearch
 
     private static (int, int)[] ReadBestFromFile(string fileName)
     {
-        return JsonSerializer.Deserialize<(int, int)[]>(File.ReadAllText(fileName));
+        var items = File.ReadAllText(fileName).Split(";");
+        var list = new List<(int, int)>();
+        foreach (var item in items)
+        {
+            var vals = item.Replace("(", "").Replace(")", "").Split(",");
+            list.Add((int.Parse(vals[0].Trim()), int.Parse(vals[1].Trim())));
+        }
+        return list.ToArray();
     }
 
     private static async Task Submit(MapData mapData, string[] names, (int, int)[] best, double localScore)
