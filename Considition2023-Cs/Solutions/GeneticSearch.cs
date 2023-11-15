@@ -5,9 +5,9 @@ using System.Text.Json;
 public class GeneticSearch
 {
     static Random Rnd = new(777);
-    const int MaxStations = 2;
-    const int childCount = 400;    
-    const int Mutations = 3;
+    internal static int MaxStations = 2;
+    internal static int ChildCount = 400;    
+    internal static int Mutations = 3;
 
     public static async void Run(MapData mapData, GeneralData generalData, bool periodicSubmit, Func<Score, double> optimizeFor, bool optimizeLow)
     {
@@ -15,7 +15,7 @@ public class GeneticSearch
         var fileName = mapData.MapName + ".txt";
         var male =  File.Exists(fileName) ? ReadBestFromFile(fileName) : RandomArray(size);
         var female = RandomArray(size);
-        var children = new (int, int)[childCount][];
+        var children = new (int, int)[ChildCount][];
         var names = mapData.locations.Select(x => x.Value.LocationName).ToArray();
         Scoring.NewDistancesCache();
         var k = 0;
@@ -24,7 +24,7 @@ public class GeneticSearch
         foreach (var hs in mapData.Hotspots)
             hs.IndexKey = k++;
 
-        for (int i = 0; i < childCount; i++)
+        for (int i = 0; i < ChildCount; i++)
         {
             children[i] = new (int, int)[size];
         }
@@ -162,7 +162,7 @@ public class GeneticSearch
         (int, int)[] a = new (int, int)[size];
         for (int i = 0; i < size; i++)
         {
-            a[i] = (Rnd.Next(MaxStations), Rnd.Next(MaxStations));
+            a[i] = (Rnd.Next(MaxStations + 1), Rnd.Next(MaxStations + 1));
         }
         return a;
     }
@@ -176,10 +176,10 @@ public class GeneticSearch
             var split = Rnd.Next(male.Length);
             Array.Copy(male, 0, children[i], 0, split);
             Array.Copy(female, split, children[i], split, female.Length - split);
-            for (int m = 0; m < 1; m++)
+            for (int m = 0; m < Mutations - 1; m++)
             {
                 var mutation = Rnd.Next(male.Length);
-                children[i][mutation] = (Rnd.Next(MaxStations), Rnd.Next(MaxStations));
+                children[i][mutation] = (Rnd.Next(MaxStations + 1), Rnd.Next(MaxStations + 1));
             }
         }
     }

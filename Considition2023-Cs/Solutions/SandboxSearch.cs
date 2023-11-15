@@ -1,18 +1,27 @@
+using System.Text.Json.Nodes;
 using Considition2023_Cs;
 using Considition2023_Cs.Solutions;
+using Newtonsoft.Json;
 
 public class SandboxSearch
 {
     static Random Rnd = new(777);
-    const int MaxStations = 3;
-    const int childCount = 500;
-    const int Mutations = 2;
-    record ChildItem { internal int F3100Count; internal int F9100Count; internal int LocationType; internal double Longitude; internal double Latitude; }
+    internal static int MaxStations = 2;
+    internal static int ChildCount = 800;
+    internal static int Mutations = 2;
+    struct ChildItem { 
+        public int F3100Count {get; set;}
+        public int F9100Count{get; set;}
+        public int LocationType{get; set;}
+        public double Longitude{get; set;}
+        public double Latitude{get; set;} 
+    }
 
     public static async void Run(MapData mapData, GeneralData generalData, bool periodicSubmit)
     {        
         var children = GetStartChildren(mapData);
-        var male = children[0];
+        var fileName = mapData.MapName + ".txt";
+        var male =  File.Exists(fileName) ? ReadBestFromFile(fileName) : children[0];        
         var female = children[1];
         var size = male.Length;
                 
@@ -27,8 +36,7 @@ public class SandboxSearch
         (int Index, double Total, double Earnings, double KgCo2Savings, double Value) bestScore = default;
         (int Index, double Total, double Earnings, double KgCo2Savings, double Value)[] twoBest;
         var best = new ChildItem[size];
-        var maxHistory = new List<double>() { bestValue };
-        //for (int n = 0; n < Runs; n++)
+        var maxHistory = new List<double>() { bestValue };        
         var n = 0;
         while (true)
         {
@@ -45,15 +53,19 @@ public class SandboxSearch
                 bestScore = twoBest[0];
                 Array.Copy(children[twoBest[0].Index], best, best.Length);
             }
-            
-            Console.WriteLine($"{n}. {bestScore.Total.ToSI()}pt, {bestScore.Earnings.ToSI()}kr, {bestScore.KgCo2Savings}kg");
-            var betterThanPreviousBest = bestValue > maxHistory.LastOrDefault();
-            if (betterThanPreviousBest)
+
+            if (n % 10 == 0)
             {
-                maxHistory.Clear();
-                if (periodicSubmit)
+                Console.WriteLine($"{n}. {bestScore.Total.ToSI()}pt, {bestScore.Earnings.ToSI()}kr, {bestScore.KgCo2Savings}kg");
+                var betterThanPreviousBest = bestValue > maxHistory.LastOrDefault();
+                if (betterThanPreviousBest)
                 {
-                    await Submit(mapData, best.Clone() as ChildItem[], bestValue);
+                    maxHistory.Clear();
+                    if (periodicSubmit)
+                    {
+                        await Submit(mapData, best.Clone() as ChildItem[], bestValue);
+                        File.WriteAllText(fileName, JsonConvert.SerializeObject(best));
+                    }
                 }
             }
             maxHistory.Add(bestValue);
@@ -70,9 +82,9 @@ public class SandboxSearch
 
     private static ChildItem[][] GetStartChildren(MapData mapData)
     {
-        var children = new ChildItem[childCount][];        
+        var children = new ChildItem[ChildCount][];        
 
-        for (int n = 0; n < childCount; n++)
+        for (int n = 0; n < ChildCount; n++)
         {
             var list = new List<ChildItem>();
             var h = 0;
@@ -80,8 +92,8 @@ public class SandboxSearch
             {
                 var hotspot = mapData.Hotspots[h++];
                 var childItem = new ChildItem {
-                    F3100Count = Rnd.Next(MaxStations),
-                    F9100Count = Rnd.Next(MaxStations),
+                    F3100Count = Rnd.Next(MaxStations + 1),
+                    F9100Count = Rnd.Next(MaxStations + 1),
                     Latitude = hotspot.Latitude,
                     Longitude = hotspot.Longitude,
                     LocationType = 0
@@ -94,8 +106,8 @@ public class SandboxSearch
                 var hotspot = mapData.Hotspots[h++];
                 var childItem = new ChildItem
                 {
-                    F3100Count = Rnd.Next(MaxStations),
-                    F9100Count = Rnd.Next(MaxStations),
+                    F3100Count = Rnd.Next(MaxStations + 1),
+                    F9100Count = Rnd.Next(MaxStations + 1),
                     Latitude = hotspot.Latitude,
                     Longitude = hotspot.Longitude,
                     LocationType = 1
@@ -108,8 +120,8 @@ public class SandboxSearch
                 var hotspot = mapData.Hotspots[h++];
                 var childItem = new ChildItem
                 {
-                    F3100Count = Rnd.Next(MaxStations),
-                    F9100Count = Rnd.Next(MaxStations),
+                    F3100Count = Rnd.Next(MaxStations + 1),
+                    F9100Count = Rnd.Next(MaxStations + 1),
                     Latitude = hotspot.Latitude,
                     Longitude = hotspot.Longitude,
                     LocationType = 2
@@ -122,8 +134,8 @@ public class SandboxSearch
                 var hotspot = mapData.Hotspots[h++];
                 var childItem = new ChildItem
                 {
-                    F3100Count = Rnd.Next(MaxStations),
-                    F9100Count = Rnd.Next(MaxStations),
+                    F3100Count = Rnd.Next(MaxStations + 1),
+                    F9100Count = Rnd.Next(MaxStations + 1),
                     Latitude = hotspot.Latitude,
                     Longitude = hotspot.Longitude,
                     LocationType = 3
@@ -136,8 +148,8 @@ public class SandboxSearch
                 var hotspot = mapData.Hotspots[h++];
                 var childItem = new ChildItem
                 {
-                    F3100Count = Rnd.Next(MaxStations),
-                    F9100Count = Rnd.Next(MaxStations),
+                    F3100Count = Rnd.Next(MaxStations + 1),
+                    F9100Count = Rnd.Next(MaxStations + 1),
                     Latitude = hotspot.Latitude,
                     Longitude = hotspot.Longitude,
                     LocationType = 4
@@ -221,13 +233,18 @@ public class SandboxSearch
             var split = Rnd.Next(male.Length);
             Array.Copy(male, 0, children[i], 0, split);
             Array.Copy(female, split, children[i], split, female.Length - split);
-            for (int m = 0; m < Rnd.Next(Mutations); m++)
+            for (int m = 0; m < Mutations - 1; m++)
             {
                 var mutation = Rnd.Next(male.Length);
-                children[i][mutation].F3100Count = Rnd.Next(MaxStations);
-                children[i][mutation].F9100Count = Rnd.Next(MaxStations);
+                children[i][mutation].F3100Count = Rnd.Next(MaxStations + 1);
+                children[i][mutation].F9100Count = Rnd.Next(MaxStations + 1);
             }
             // TODO: also mutate other features
         }
+    }
+    private static ChildItem[] ReadBestFromFile(string fileName)
+    {
+        Console.WriteLine("Read " + fileName);
+        return JsonConvert.DeserializeObject<ChildItem[]>(File.ReadAllText(fileName));        
     }
 }
