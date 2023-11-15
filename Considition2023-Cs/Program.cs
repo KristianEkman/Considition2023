@@ -1,24 +1,26 @@
 ﻿using Considition2023_Cs;
-using Considition2023_Cs.Solutions;
-using KristianEkman.GraphLib;
-using System.Diagnostics;
 using System.Text.Json.Serialization;
 
-if (string.IsNullOrWhiteSpace(HelperExtensions.Apikey))
+const string apikey = "20d51f18-3a6f-4419-8466-1fac81f7e540";
+
+
+if (string.IsNullOrWhiteSpace(apikey))
 {
     Console.WriteLine("Configure apiKey");
     return;
 }
 
-//Console.WriteLine($"1: {MapNames.Stockholm}");
+Console.WriteLine($"1: {MapNames.Stockholm}");
 Console.WriteLine($"2: {MapNames.Goteborg}");
-//Console.WriteLine($"3: {MapNames.Malmo}");
+Console.WriteLine($"3: {MapNames.Malmo}");
 Console.WriteLine($"4: {MapNames.Uppsala}");
 Console.WriteLine($"5: {MapNames.Vasteras}");
-//Console.WriteLine($"6: {MapNames.Orebro}");
-//Console.WriteLine($"7: {MapNames.London}");
+Console.WriteLine($"6: {MapNames.Orebro}");
+Console.WriteLine($"7: {MapNames.London}");
 Console.WriteLine($"8: {MapNames.Linkoping}");
-//Console.WriteLine($"9: {MapNames.Berlin}");
+Console.WriteLine($"9: {MapNames.Berlin}");
+Console.WriteLine($"10: {MapNames.GSandbox}");
+Console.WriteLine($"11: {MapNames.SSandbox}");
 
 Console.Write("Select the map you wish to play: ");
 string option = Console.ReadLine();
@@ -34,6 +36,8 @@ var mapName = option switch
     "7" => MapNames.London,
     "8" => MapNames.Linkoping,
     "9" => MapNames.Berlin,
+    "10" => MapNames.GSandbox,
+    "11" => MapNames.SSandbox,
     _ => null
 };
 
@@ -42,42 +46,100 @@ if (mapName is null)
     Console.WriteLine("Invalid map selected");
     return;
 }
-
+bool isHardcore = Scoring.SandBoxMaps.Contains(mapName.ToLower()); 
 HttpClient client = new();
 Api api = new(client);
-MapData mapData = await api.GetMapDataAsync(mapName, HelperExtensions.Apikey);
-
-Scoring.NewDistancesCache();
-//mapData.PrintJson();
+MapData mapData = await api.GetMapDataAsync(mapName, apikey);
 GeneralData generalData = await api.GetGeneralDataAsync();
-//generalData.PrintJson();
 
-//OriginalExample.Run(mapData, generalData);
-//SimpleRamp.Run(mapData, generalData);
-//CapacityVolumeMatch.Run(mapData, generalData);
-Stopwatch stopwatch = Stopwatch.StartNew();
+GeneticSearch.Run(mapData, generalData, false, x => x.Total, false);
 
-// Optimize for high total score
-GeneticSearch.Run(mapData, generalData, true, x => x.Total, false);
+SubmitSolution solution = new() 
+{
+    Locations = new()
+};
 
-// Optimize for high CO2 savings
-//GeneticSearch.Run(mapData, generalData, true, x => x.KgCo2Savings, false);
 
-// Optimize for high earnings
-//GeneticSearch.Run(mapData, generalData, true, x => x.Earnings, false);
+if (isHardcore)
+{
+    var hotspot = mapData.Hotspots[0];
+    var hotspot2 = mapData.Hotspots[1];
 
-// Optimize for score = 1337
-//GeneticSearch.Run(mapData, generalData, false, x => Math.Abs(1337d - x.Total), true);
+    solution.Locations.Add("location1", new PlacedLocations()
+    {
+        Freestyle9100Count = 1,
+        Freestyle3100Count = 0,
+        LocationType = generalData.LocationTypes["grocerystorelarge"].Type,
+        Longitude = hotspot.Longitude,
+        Latitude = hotspot.Latitude
+    });
+    solution.Locations.Add("location2", new PlacedLocations()
+    {
+        Freestyle9100Count = 0,
+        Freestyle3100Count = 1,
+        LocationType = generalData.LocationTypes["groceryStore"].Type,
+        Longitude = hotspot2.Longitude,
+        Latitude = hotspot2.Latitude
+    });
+}
+else
+{
+    foreach (KeyValuePair<string, StoreLocation> locationKeyPair in mapData.locations)
+    {
+        StoreLocation location = locationKeyPair.Value;
+        //string name = locationKeyPair.Key;
+        var salesVolume = location.SalesVolume;
+        if (salesVolume > 100)
+        {
+            solution.Locations[location.LocationName] = new PlacedLocations()
+            {
+                Freestyle3100Count = 0,
+                Freestyle9100Count = 1
+            };
+        }
+    }
+}
 
-// Optimize for score = 1
-//GeneticSearch.Run(mapData, generalData, false, x => Math.Abs(1d - x.Total), true);
+if (isHardcore)
+{
+    var hardcoreValidation = Scoring.SandboxValidation(mapName, solution, mapData);
+    if (hardcoreValidation is not null)
+    {
+        throw new Exception("Hardcore validation failed");
+    }
+}
 
-Console.WriteLine("Took: " + stopwatch.ElapsedMilliseconds / 1000d);
+GameData score = Scoring.CalculateScore(mapName, solution, mapData, generalData);
+Console.WriteLine($"GameScore: {score.GameScore.Total}");
+GameData prodScore = await api.SumbitAsync(mapName, solution, apikey);
+Console.WriteLine($"GameId: {prodScore.Id}");
+Console.WriteLine($"GameScore: {prodScore.GameScore.Total}");
+Console.ReadLine();
 
-//var graph = new Graph("Test.dgrm", new[] { "S1", "S2", "S3" });
-//graph.Series[0].AddPoints((0, 0), (1,3), (5, 4));
-//graph.Series[1].AddPoints((1, 1), (3,3), (7, 4));
-//graph.Series[2].AddPoints((3, 2), (3,3), (8, 4));
-//graph.Save("Test.dgrm");
-
-// Console.ReadLine();
+//if (Scoring.SandBoxMaps.Contains(mapName.ToLower()))
+//{
+//    List<string> hardcoreMaps = Scoring.SandBoxMaps;
+//    if (hardcoreMaps.Contains(mapName.ToLower()))
+//    {
+//        var hardcoreValidation = Scoring.SandboxValidation(mapName, solution, mapData);
+//        if (hardcoreValidation is not null)
+//        {
+//            throw new Exception("Hardcore validation failed");
+//        }
+//    }
+//    GameData score = new Scoring().CalculateScore(string.Empty, solution, mapData, generalData);
+//    Console.WriteLine($"GameScore: {score.GameScore.Total}");
+//    GameData prodScore = await api.SumbitAsync(mapName, solution, apikey);
+//    Console.WriteLine($"GameId: {prodScore.Id}");
+//    Console.WriteLine($"GameScore: {prodScore.GameScore}");
+//    Console.ReadLine();
+//}
+//else
+//{
+//    GameData score = new Scoring().CalculateScore(string.Empty, solution, mapData, generalData);
+//    Console.WriteLine($"GameScore: {score.GameScore.Total}");
+//    GameData prodScore = await api.SumbitAsync(mapName, solution, apikey);
+//    Console.WriteLine($"GameId: {prodScore.Id}");
+//    Console.WriteLine($"GameScore: {prodScore.GameScore}");
+//    Console.ReadLine();
+//}

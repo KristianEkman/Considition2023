@@ -11,15 +11,21 @@ namespace Considition2023_Cs
     public class SubmitSolution
     {
         public Dictionary<string, PlacedLocations> Locations { get; set; } = new();
+        public double Longitude { get; set; }
+        public string LocationType { get; set; } = string.Empty;
     }
 
     public class PlacedLocations
     {
-        [Range(0, 5)]
+        [Range(0, 2)]
         public required int Freestyle9100Count { get; set; } = -1;
 
-        [Range(0, 5)]
+        [Range(0, 2)]
         public required int Freestyle3100Count { get; set; } = -1;
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
+        public string LocationType { get; set; } = string.Empty;
+        internal int IndexKey { get; set; }
     }
 
 
@@ -63,6 +69,7 @@ namespace Considition2023_Cs
         public double Latitude { get; set; }
         public double Longitude { get; set; }
         public double Footfall { get; set; }
+        internal int IndexKey { get; set; }
     }
 
 
@@ -144,6 +151,7 @@ namespace Considition2023_Cs
         public double Latitude { get; set; }
         public double Longitude { get; set; }
         public double Footfall { get; set; }
+        public int FootfallScale { get; set; }
         public double SalesVolume { get; set; }
         public double SalesCapacity { get; set; }
         public double LeasingCost { get; set; }
@@ -154,7 +162,7 @@ namespace Considition2023_Cs
         public double GramCo2Savings { get; set; }
         public bool IsProfitable { get; set; } = false;
         public bool IsCo2Saving { get; set; } = false;
-        internal int IndexKey { get; set; }
+        public int IndexKey { get; internal set; }
     }
 
     public class Score
