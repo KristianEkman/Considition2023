@@ -1,6 +1,8 @@
 TODO
 ====
 
+* Spara bästa matris och ladda den vid start
+* start-parametrar
 * Söka fram bästa position innan Station Count
 * Sanbox multi thread
 
