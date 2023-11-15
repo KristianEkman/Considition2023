@@ -30,7 +30,9 @@ internal class Api
         var response = await _httpClient.GetAsync("/api/game/getgeneralgamedata");
         response.EnsureSuccessStatusCode();
         string responseText = await response.Content.ReadAsStringAsync();
-        return JsonConvert.DeserializeObject<GeneralData>(responseText);
+        var data = JsonConvert.DeserializeObject<GeneralData>(responseText);
+        HelperExtensions.LocationTypes = data.LocationTypes.ToArray();
+        return data;
     }
 
     public async Task<GameData> GetGameAsync(Guid id)

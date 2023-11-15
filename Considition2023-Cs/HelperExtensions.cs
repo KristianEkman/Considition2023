@@ -35,6 +35,27 @@ namespace Considition2023_Cs
 
         public static string Apikey = "20d51f18-3a6f-4419-8466-1fac81f7e540";
 
+        public static KeyValuePair<string, LocationType>[] LocationTypes { get; set; }
+
+        public static bool IsToGood(this double score , string mapName)
+        {
+            switch (mapName)
+            {
+                case "":
+                    return true;
+                case "goteborg":
+                    return score > 6161;
+                case "linkoping":
+                    return score > 699;
+                case "uppsala":
+                    return score > 2416;
+                case "vasteras":
+                    return score > 1498;
+                case "g-sandbox":
+                    return score > 2320;
+            }
+            return false;
+        }
 
     }
 }

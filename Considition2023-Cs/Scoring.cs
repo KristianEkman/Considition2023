@@ -10,7 +10,7 @@ namespace Considition2023_Cs
     {
         public static List<string> SandBoxMaps { get; } = new List<string> { "s-sandbox", "g-sandbox" };
 
-        public static GameData CalculateScore(string mapName, SubmitSolution solution, MapData mapEntity, GeneralData generalData)
+        public static GameData CalculateScore(string mapName, SubmitSolution solution, MapData mapEntity, GeneralData generalData, bool sandBox = false)
         {
             GameData scoredSolution = new()
             {
@@ -21,8 +21,8 @@ namespace Considition2023_Cs
                 GameScore = new()
             };
 
-            List<string> sandboxMaps = SandBoxMaps;
-            if (sandboxMaps.Contains(mapName) == false)
+            
+            if (!sandBox)
             {
                 //Separate locations on the map into dict for those that have a refill station and those who have not.
                 Dictionary<string, StoreLocationScoring> locationListNoRefillStation = new();
@@ -89,7 +89,7 @@ namespace Considition2023_Cs
             foreach (KeyValuePair<string, StoreLocationScoring> kvp in scoredSolution.Locations)
             {
                 kvp.Value.SalesVolume = Math.Round(kvp.Value.SalesVolume, 0);
-                if (kvp.Value.Footfall <= 0 && sandboxMaps.Contains(mapName) == true)
+                if (kvp.Value.Footfall <= 0 && sandBox)
                 {
                     kvp.Value.SalesVolume = 0;
                 }
@@ -295,6 +295,13 @@ namespace Considition2023_Cs
             return locations;
         }
 
+        internal const int maxGroceryStoreLarge = 5;
+        internal const int maxGroceryStore = 20;
+        internal const int maxConvenience = 20;
+        internal const int maxGasStation = 8;
+        internal const int maxKiosk = 3;
+        internal const int totalStores = maxGroceryStoreLarge + maxGroceryStore + maxConvenience + maxGasStation + maxKiosk;
+
         public static string SandboxValidation(string inMapName, SubmitSolution request, MapData mapData)
         {
             int countGroceryStoreLarge = 0;
@@ -302,12 +309,7 @@ namespace Considition2023_Cs
             int countConvenience = 0;
             int countGasStation = 0;
             int countKiosk = 0;
-            const int maxGroceryStoreLarge = 5;
-            const int maxGroceryStore = 20;
-            const int maxConvenience = 20;
-            const int maxGasStation = 8;
-            const int maxKiosk = 3;
-            const int totalStores = maxGroceryStoreLarge + maxGroceryStore + maxConvenience + maxGasStation + maxKiosk;
+            
             string numberErrorMsg = string.Format("locationName needs to start with 'location' and followed with a number larger than 0 and less than {0}.", totalStores + 1);
             string mapName = inMapName.ToLower();
             foreach (KeyValuePair<string, PlacedLocations> kvp in request.Locations)

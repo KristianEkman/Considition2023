@@ -1,18 +1,21 @@
 using Considition2023_Cs;
+using Considition2023_Cs.Solutions;
+using System.Text.Json;
 
 public class GeneticSearch
 {
     static Random Rnd = new(777);
-    const int MaxStations = 3;
-    const int childCount = 500;    
-    const int Mutations = 2;
+    internal static int MaxStations = 2;
+    internal static int ChildCount = 400;    
+    internal static int Mutations = 3;
 
     public static async void Run(MapData mapData, GeneralData generalData, bool periodicSubmit, Func<Score, double> optimizeFor, bool optimizeLow)
     {
         var size = mapData.locations.Count;
-        var male = RandomArray(size);
+        var fileName = mapData.MapName + ".txt";
+        var male =  File.Exists(fileName) ? ReadBestFromFile(fileName) : RandomArray(size);
         var female = RandomArray(size);
-        var children = new (int, int)[childCount][];
+        var children = new (int, int)[ChildCount][];
         var names = mapData.locations.Select(x => x.Value.LocationName).ToArray();
         Scoring.NewDistancesCache();
         var k = 0;
@@ -21,7 +24,7 @@ public class GeneticSearch
         foreach (var hs in mapData.Hotspots)
             hs.IndexKey = k++;
 
-        for (int i = 0; i < childCount; i++)
+        for (int i = 0; i < ChildCount; i++)
         {
             children[i] = new (int, int)[size];
         }
@@ -53,7 +56,7 @@ public class GeneticSearch
                 if (optimizeLow && bestValue == 0d)
                 {
                     // found the target score
-                    await Submit(mapData, names, best.Clone() as (int, int)[]);
+                    await Submit(mapData, names, best.Clone() as (int, int)[], bestValue);
                     break;
                 }
             }
@@ -69,7 +72,8 @@ public class GeneticSearch
                     maxHistory.Clear();
                     if (periodicSubmit)
                     {
-                        Submit(mapData, names, best.Clone() as (int, int)[]);
+                        Submit(mapData, names, best.Clone() as (int, int)[], bestValue);
+                        File.WriteAllText(mapData.MapName + ".txt", string.Join(";", best));
                     }
                 }
                 maxHistory.Add(bestValue);
@@ -85,7 +89,19 @@ public class GeneticSearch
         }
     }
 
-    private static async Task Submit(MapData mapData, string[] names, (int, int)[] best)
+    private static (int, int)[] ReadBestFromFile(string fileName)
+    {
+        var items = File.ReadAllText(fileName).Split(";");
+        var list = new List<(int, int)>();
+        foreach (var item in items)
+        {
+            var vals = item.Replace("(", "").Replace(")", "").Split(",");
+            list.Add((int.Parse(vals[0].Trim()), int.Parse(vals[1].Trim())));
+        }
+        return list.ToArray();
+    }
+
+    private static async Task Submit(MapData mapData, string[] names, (int, int)[] best, double localScore)
     {
         SubmitSolution solution = new();
         for (var j = 0; j < best.Length; j++)
@@ -100,27 +116,8 @@ public class GeneticSearch
             }
         }
 
-        HttpClient client = new();
-        Api api = new(client);
-        GameData prodScore = await api.SumbitAsync(mapData.MapName, solution, HelperExtensions.Apikey);
-        var result = $"\r\n{mapData.MapName}: {prodScore.Id} {prodScore.GameScore.Total.ToSI()} at {DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff")}";
-        Console.WriteLine(result);
-        File.AppendAllText("resultslog.txt", result);
-
-        var F3100count = solution.Locations.GroupBy(x => x.Value.Freestyle3100Count).OrderBy(x => x.Key);
-        Console.WriteLine("F3100");
-        foreach (var item in F3100count)
-        {
-            Console.WriteLine($"{item.Key}st: {item.Count()} places");
-        }
-
-        var F9100count = solution.Locations.GroupBy(x => x.Value.Freestyle9100Count).OrderBy(x => x.Key);
-        Console.WriteLine("\nF9100");
-        foreach (var item in F9100count)
-        {
-            Console.WriteLine($"{item.Key}st: {item.Count()}");
-        }
-    }
+        await  SolutionBase.SubmitSolution(mapData, localScore, solution);
+    }    
 
     private static (int Index, double Total, double Earnings, double KgCo2Savings, double v)[] Evaluate(
         (int, int)[][] children, MapData mapData, GeneralData generalData, Func<Score, double> optimizeFor, bool optimizeLow)
@@ -165,7 +162,7 @@ public class GeneticSearch
         (int, int)[] a = new (int, int)[size];
         for (int i = 0; i < size; i++)
         {
-            a[i] = (Rnd.Next(MaxStations), Rnd.Next(MaxStations));
+            a[i] = (Rnd.Next(MaxStations + 1), Rnd.Next(MaxStations + 1));
         }
         return a;
     }
@@ -179,10 +176,10 @@ public class GeneticSearch
             var split = Rnd.Next(male.Length);
             Array.Copy(male, 0, children[i], 0, split);
             Array.Copy(female, split, children[i], split, female.Length - split);
-            for (int m = 0; m < Rnd.Next(Mutations); m++)
+            for (int m = 0; m < Mutations - 1; m++)
             {
                 var mutation = Rnd.Next(male.Length);
-                children[i][mutation] = (Rnd.Next(MaxStations), Rnd.Next(MaxStations));
+                children[i][mutation] = (Rnd.Next(MaxStations + 1), Rnd.Next(MaxStations + 1));
             }
         }
     }

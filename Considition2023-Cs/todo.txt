@@ -1,8 +1,12 @@
 TODO
 ====
 
+* Spara bästa matris och ladda den vid start
+* start-parametrar
+* Söka fram bästa position innan Station Count
+* Sanbox multi thread
+
 * Optimera scoring-funktionen
-	- Kan Dictionary bytas till arrayer?
 
 * Reda ut matematiskt, hur ser de olika beroendena ut.
 Total = (KgCo2Savings * Co2PricePerKiloInSek + Earnings) * (1 + TotalFootfall)
@@ -28,6 +32,8 @@ Genetisk sökning.
 Skicka till api:et var 100:e
 Spara High Score och lösning
 Loopa olika seeds
+Sätta submitgräns på träningsbanor
+Jämföra prodscore och local score, printa diff.
 
 Frågor
 ======
