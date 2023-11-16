@@ -10,17 +10,17 @@ public class GeneticSearchFaster
     internal static int ChildCount = 500;
     internal static int Mutations = 1;
 
-    public static async void Run(MapData mapData, GeneralData generalData, bool periodicSubmit, Func<Score, double> optimizeFor, bool optimizeLow)
+    public static async void Run(MapData mapData, GeneralData generalData, bool periodicSubmit)
     {
         var size = mapData.locations.Count;
         Console.WriteLine($"{mapData.MapName} has {size} locations");
         Scoring.NewDistancesCache();
         var n = 0;
         var bestValue = 0d;
+        var fileName = mapData.MapName + ".txt";
 
         while (true)
         {
-            var fileName = mapData.MapName + ".txt";
             var male = File.Exists(fileName) ? ReadBestFromFile(fileName) : RandomArray(size);
             var female = RandomArray(size);
             var children = new (int, int)[ChildCount][];

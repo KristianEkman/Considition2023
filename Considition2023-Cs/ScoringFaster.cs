@@ -86,7 +86,7 @@ namespace Considition2023_Cs
             foreach (KeyValuePair<int, StoreLocationScoring> kvp in Locations)
             {
                 var loc = kvp.Value;
-                loc.SalesVolume = Math.Round(loc.SalesVolume, 0);
+                //loc.SalesVolume = Math.Round(loc.SalesVolume, 0);
                 if (loc.Footfall <= 0 && sandBox)
                 {
                     loc.SalesVolume = 0;
