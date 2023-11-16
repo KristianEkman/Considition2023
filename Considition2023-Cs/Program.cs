@@ -23,7 +23,7 @@ GeneralData generalData = await api.GetGeneralDataAsync();
 if (isSandBox)
     SandboxSearch.Run(mapData, generalData, true);
 else
-    GeneticSearch.Run(mapData, generalData, true, x => x.Total, false);
+    GeneticSearchFaster.Run(mapData, generalData, true, x => x.Total, false);
 
 void Parse(string[] args)
 {
