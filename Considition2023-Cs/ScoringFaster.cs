@@ -12,7 +12,7 @@ namespace Considition2023_Cs
 
         public static double CalculateScore(SubmitSolution solution, MapData mapEntity, GeneralData generalData, bool sandBox = false)
         {
-            var Locations = new Dictionary<string, StoreLocationScoring>();
+            var Locations = new Dictionary<int, StoreLocationScoring>();
             var KgCo2Savings = 0d;
             var TotalRevenue = 0d;
             var TotalFreestyle3100Count = 0d;
@@ -23,13 +23,13 @@ namespace Considition2023_Cs
             if (!sandBox)
             {
                 //Separate locations on the map into dict for those that have a refill station and those who have not.
-                Dictionary<string, StoreLocationScoring> locationListNoRefillStation = new();
+                Dictionary<int, StoreLocationScoring> locationListNoRefillStation = new();
                 //Dictionary<string, StoreLocationScoring> locationListWithRefillStation = new();
                 foreach (KeyValuePair<string, StoreLocation> kvp in mapEntity.locations)
                 {
                     if (solution.Locations.ContainsKey(kvp.Key))
                     {
-                        Locations[kvp.Key] = new()
+                        Locations[kvp.Value.IndexKey] = new()
                         {
                             LocationName = kvp.Value.LocationName,
                             LocationType = kvp.Value.LocationType,
@@ -50,13 +50,13 @@ namespace Considition2023_Cs
                             IndexKey = kvp.Value.IndexKey
                         };
 
-                        if (Locations[kvp.Key].SalesCapacity > 0 == false)
+                        if (Locations[kvp.Value.IndexKey].SalesCapacity > 0 == false)
                         {
                             return 0;
                         }
                     }
                     else
-                        locationListNoRefillStation[kvp.Key] = new()
+                        locationListNoRefillStation[kvp.Value.IndexKey] = new()
                         {
                             LocationName = kvp.Value.LocationName,
                             LocationType = kvp.Value.LocationType,
@@ -83,7 +83,7 @@ namespace Considition2023_Cs
 
             Locations = DivideFootfall(Locations, generalData);
 
-            foreach (KeyValuePair<string, StoreLocationScoring> kvp in Locations)
+            foreach (KeyValuePair<int, StoreLocationScoring> kvp in Locations)
             {
                 var loc = kvp.Value;
                 loc.SalesVolume = Math.Round(loc.SalesVolume, 0);
@@ -128,33 +128,33 @@ namespace Considition2023_Cs
             );
         }
 
-        private static Dictionary<string, StoreLocationScoring> DistributeSales(Dictionary<string, StoreLocationScoring> with, Dictionary<string, StoreLocationScoring> without, GeneralData generalData)
+        private static Dictionary<int, StoreLocationScoring> DistributeSales(Dictionary<int, StoreLocationScoring> with, Dictionary<int, StoreLocationScoring> without, GeneralData generalData)
         {
-            foreach (KeyValuePair<string, StoreLocationScoring> kvpWithout in without)
+            foreach (KeyValuePair<int, StoreLocationScoring> kvpWithout in without)
             {
-                Dictionary<string, double> distributeSalesTo = new();
+                Dictionary<int, double> distributeSalesTo = new();
                 //double locationSalesFrom = await GetSalesVolume(kvpWithout.Value.LocationType) ?? throw new Exception(string.Format("Location: {0}, have an invalid location type: {1}", kvpWithout.Key, kvpWithout.Value.LocationType));
 
-                foreach (KeyValuePair<string, StoreLocationScoring> kvpWith in with)
+                foreach (KeyValuePair<int, StoreLocationScoring> kvpWith in with)
                 {
                     int distance = kvpWithout.Value.DistanceBetweenPoint(kvpWith.Value);
                     if (distance < generalData.WillingnessToTravelInMeters)
                     {
-                        distributeSalesTo[kvpWith.Value.LocationName] = distance;
+                        distributeSalesTo[kvpWith.Value.IndexKey] = distance;
                     }
                 }
 
                 double total = 0;
                 if (distributeSalesTo.Count > 0)
                 {
-                    foreach (KeyValuePair<string, double> kvp in distributeSalesTo)
+                    foreach (KeyValuePair<int, double> kvp in distributeSalesTo)
                     {
                         distributeSalesTo[kvp.Key] = Math.Pow(generalData.ConstantExpDistributionFunction, generalData.WillingnessToTravelInMeters - kvp.Value) - 1;
                         total += distributeSalesTo[kvp.Key];
                     }
 
                     //Add boosted sales to original sales volume
-                    foreach (KeyValuePair<string, double> kvp in distributeSalesTo)
+                    foreach (KeyValuePair<int, double> kvp in distributeSalesTo)
                     {
                         with[kvp.Key].SalesVolume += distributeSalesTo[kvp.Key] / total *
                         generalData.RefillDistributionRate * kvpWithout.Value.SalesVolume;//locationSalesFrom;
@@ -165,10 +165,10 @@ namespace Considition2023_Cs
             return with;
         }
 
-        public static Dictionary<string, StoreLocationScoring> CalcualteFootfall(Dictionary<string, StoreLocationScoring> locations, MapData mapEntity)
+        public static Dictionary<int, StoreLocationScoring> CalcualteFootfall(Dictionary<int, StoreLocationScoring> locations, MapData mapEntity)
         {
             double maxFootfall = 0;
-            foreach (KeyValuePair<string, StoreLocationScoring> kvpLoc in locations)
+            foreach (KeyValuePair<int, StoreLocationScoring> kvpLoc in locations)
             {
                 foreach (Hotspot hotspot in mapEntity.Hotspots)
                 {
@@ -188,7 +188,7 @@ namespace Considition2023_Cs
             }
             if (maxFootfall > 0)
             {
-                foreach (KeyValuePair<string, StoreLocationScoring> kvpLoc in locations)
+                foreach (KeyValuePair<int, StoreLocationScoring> kvpLoc in locations)
                 {
                     if (kvpLoc.Value.Footfall > 0)
                     {
@@ -213,7 +213,7 @@ namespace Considition2023_Cs
             }
             return 0;
         }
-        public static Dictionary<string, StoreLocationScoring> InitiateSandboxLocations(Dictionary<string, StoreLocationScoring> locations, GeneralData generalData, SubmitSolution request)
+        public static Dictionary<int, StoreLocationScoring> InitiateSandboxLocations(Dictionary<int, StoreLocationScoring> locations, GeneralData generalData, SubmitSolution request)
         {
             foreach (KeyValuePair<string, PlacedLocations> kvpLoc in request.Locations)
             {
@@ -234,13 +234,13 @@ namespace Considition2023_Cs
                     IndexKey = kvpLoc.Value.IndexKey
 
                 };
-                locations.Add(kvpLoc.Key, scoredSolution);
+                locations.Add(kvpLoc.Value.IndexKey, scoredSolution);
             }
-            foreach (KeyValuePair<string, StoreLocationScoring> kvpScope in locations)
+            foreach (KeyValuePair<int, StoreLocationScoring> kvpScope in locations)
             {
                 int count = 1;
                 //Dictionary<string, double> distributeSalesTo = new();
-                foreach (KeyValuePair<string, StoreLocationScoring> kvpSurrounding in locations)
+                foreach (KeyValuePair<int, StoreLocationScoring> kvpSurrounding in locations)
                 {
                     if (kvpScope.Key != kvpSurrounding.Key)
                     {
@@ -259,12 +259,12 @@ namespace Considition2023_Cs
             return locations;
         }
 
-        public static Dictionary<string, StoreLocationScoring> DivideFootfall(Dictionary<string, StoreLocationScoring> locations, GeneralData generalData)
+        public static Dictionary<int, StoreLocationScoring> DivideFootfall(Dictionary<int, StoreLocationScoring> locations, GeneralData generalData)
         {
-            foreach (KeyValuePair<string, StoreLocationScoring> kvpScope in locations)
+            foreach (KeyValuePair<int, StoreLocationScoring> kvpScope in locations)
             {
                 int count = 1;
-                foreach (KeyValuePair<string, StoreLocationScoring> kvpSurrounding in locations)
+                foreach (KeyValuePair<int, StoreLocationScoring> kvpSurrounding in locations)
                 {
                     if (kvpScope.Key != kvpSurrounding.Key)
                     {

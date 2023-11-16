@@ -36,16 +36,19 @@ void Parse(string[] args)
         {
             case "MaxStations":
                 GeneticSearch.MaxStations = int.Parse(split[1]);
+                GeneticSearchFaster.MaxStations = int.Parse(split[1]);
                 SandboxSearch.MaxStations = int.Parse(split[1]);
                 Console.WriteLine($"MaxStations={split[1]}");
                 break;
             case "ChildCount":
                 GeneticSearch.ChildCount = int.Parse(split[1]);
+                GeneticSearchFaster.ChildCount = int.Parse(split[1]);
                 SandboxSearch.ChildCount = int.Parse(split[1]);
                 Console.WriteLine($"ChildCount={split[1]}");
                 break;
             case "Mutations":
                 GeneticSearch.Mutations = int.Parse(split[1]);
+                GeneticSearchFaster.Mutations = int.Parse(split[1]);
                 SandboxSearch.Mutations = int.Parse(split[1]);
                 Console.WriteLine($"Mutations={split[1]}");
                 break;
