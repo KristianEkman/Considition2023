@@ -113,19 +113,17 @@ namespace Considition2023_Cs
             }
 
             //Just some rounding for nice whole numbers
-            TotalRevenue = Math.Round(TotalRevenue, 2);
-            KgCo2Savings = Math.Round(KgCo2Savings, 2);
-            TotalFootfall = Math.Round(TotalFootfall, 4);
+            // TotalRevenue = Math.Round(TotalRevenue, 2);
+            // KgCo2Savings = Math.Round(KgCo2Savings, 2);
+            // TotalFootfall = Math.Round(TotalFootfall, 4);
 
             //Calculate Earnings
             var earnings = (TotalRevenue - TotalLeasingCost) / 1000;
 
             //Calculate total score
-            return Math.Round(
+            return 
                 (KgCo2Savings * generalData.Co2PricePerKiloInSek + earnings) *
-                (1 + TotalFootfall),
-                2
-            );
+                (1 + TotalFootfall);
         }
 
         private static Dictionary<int, StoreLocationScoring> DistributeSales(Dictionary<int, StoreLocationScoring> with, Dictionary<int, StoreLocationScoring> without, GeneralData generalData)
