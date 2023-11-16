@@ -7,73 +7,81 @@ public class GeneticSearchFaster
 {
     static Random Rnd = new(777);
     internal static int MaxStations = 2;
-    internal static int ChildCount = 500;    
+    internal static int ChildCount = 500;
     internal static int Mutations = 1;
 
     public static async void Run(MapData mapData, GeneralData generalData, bool periodicSubmit, Func<Score, double> optimizeFor, bool optimizeLow)
     {
         var size = mapData.locations.Count;
-        var fileName = mapData.MapName + ".txt";
-        var male =  File.Exists(fileName) ? ReadBestFromFile(fileName) : RandomArray(size);
-        var female = RandomArray(size);
-        var children = new (int, int)[ChildCount][];
-        var names = mapData.locations.Select(x => x.Value.LocationName).ToArray();
+        Console.WriteLine($"{mapData.MapName} has {size} locations");
         Scoring.NewDistancesCache();
-        var k = 0;
-        foreach (var loc in mapData.locations)
-            loc.Value.IndexKey = k++;        
-        foreach (var hs in mapData.Hotspots)
-            hs.IndexKey = k++;
-
-        for (int i = 0; i < ChildCount; i++)
-        {
-            children[i] = new (int, int)[size];
-        }
-
-        var bestValue = 0d;        
-        (int Index, double Total)[] twoBest;
-        var best = new (int, int)[size];
-        var maxHistory = new List<double>() { bestValue };
-        
         var n = 0;
-        var stopWatch = Stopwatch.StartNew();
+        var bestValue = 0d;
+
         while (true)
         {
-            n++;
-            MakeChildren(children, male, female);
-            twoBest = Evaluate(children, mapData, generalData);
-            male = children[twoBest[0].Index];
-            female = children[twoBest[1].Index];
+            var fileName = mapData.MapName + ".txt";
+            var male = File.Exists(fileName) ? ReadBestFromFile(fileName) : RandomArray(size);
+            var female = RandomArray(size);
+            var children = new (int, int)[ChildCount][];
+            var names = mapData.locations.Select(x => x.Value.LocationName).ToArray();
+            var k = 0;
+            foreach (var loc in mapData.locations)
+                loc.Value.IndexKey = k++;
+            foreach (var hs in mapData.Hotspots)
+                hs.IndexKey = k++;
 
-            var isBetter = twoBest[0].Total > bestValue;
-            if (isBetter)
+            for (int i = 0; i < ChildCount; i++)
             {
-                bestValue = twoBest[0].Total;                
-                Array.Copy(children[twoBest[0].Index], best, best.Length);
+                children[i] = new (int, int)[size];
             }
 
-            if (n % 100 == 0)
+            (int Index, double Total)[] twoBest;
+            var best = new (int, int)[size];
+            var maxHistory = new List<double>() { bestValue };
+
+            var stopWatch = Stopwatch.StartNew();
+            while (true)
             {
-                var speed = ((n * 100 * ChildCount) / (double)stopWatch.ElapsedMilliseconds).ToString("0.##");
-                Console.WriteLine($"{n}. {bestValue.ToString("0.##")}pt, {speed}E/ms");
-                var betterThanPreviousBest = bestValue > maxHistory.LastOrDefault();
-                if (betterThanPreviousBest)
+                n++;
+                MakeChildren(children, male, female);
+                twoBest = Evaluate(children, mapData, generalData);
+                male = children[twoBest[0].Index];
+                female = children[twoBest[1].Index];
+
+                var isBetter = twoBest[0].Total > bestValue;
+                if (isBetter)
                 {
-                    maxHistory.Clear();
-                    if (periodicSubmit)
-                    {
-                        Submit(mapData, names, best.Clone() as (int, int)[], bestValue);
-                        File.WriteAllText(mapData.MapName + ".txt", string.Join(";", best));
-                    }
+                    bestValue = twoBest[0].Total;
+                    Array.Copy(children[twoBest[0].Index], best, best.Length);
                 }
-                maxHistory.Add(bestValue);
-                if (maxHistory.Count > 5)
+
+                if (n % 100 == 0)
                 {
-                    var seed = Rnd.Next(1000);
-                    Console.WriteLine("New Seed: " + seed);
-                    Rnd = new Random(seed);
-                    maxHistory.Clear();
+                    var speed = ((100 * ChildCount) / (double)stopWatch.ElapsedMilliseconds).ToString("0.##");
+                    stopWatch.Restart();
+                    Console.WriteLine($"{n}. {bestValue.ToString("0.##")} pt\t{speed} evs/ms");
+                    var betterThanPreviousBest = bestValue > maxHistory.LastOrDefault();
+                    if (betterThanPreviousBest)
+                    {
+                        maxHistory.Clear();
+                        if (periodicSubmit)
+                        {
+                            Submit(mapData, names, best.Clone() as (int, int)[], bestValue);
+                            File.WriteAllText(mapData.MapName + ".txt", string.Join(";", best));
+                        }
+                    }
                     maxHistory.Add(bestValue);
+                    if (maxHistory.Count > 5)
+                    {
+                        Console.WriteLine("Restart");
+                        break;
+                        //var seed = Rnd.Next(1000);
+                        //Console.WriteLine("New Seed: " + seed);
+                        //Rnd = new Random(seed);
+                        //maxHistory.Clear();
+                        //maxHistory.Add(bestValue);
+                    }
                 }
             }
         }

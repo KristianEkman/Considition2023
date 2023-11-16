@@ -1,12 +1,17 @@
 TODO
 ====
 
-* Spara bästa matris och ladda den vid start
-* start-parametrar
+Smartare distribuering av mutationer
+	* ChildCount = size
+	* +1 eller -1
+	* inte runda av total score
+
+Sandbox
 * Söka fram bästa position innan Station Count
 * Sanbox multi thread
 
 * Optimera scoring-funktionen
+
 
 * Reda ut matematiskt, hur ser de olika beroendena ut.
 Total = (KgCo2Savings * Co2PricePerKiloInSek + Earnings) * (1 + TotalFootfall)
@@ -34,7 +39,6 @@ Spara High Score och lösning
 Loopa olika seeds
 Sätta submitgräns på träningsbanor
 Jämföra prodscore och local score, printa diff.
+Spara bästa matris och ladda den vid start
+start-parametrar
 
-Frågor
-======
-Får man olika general data per karta?
