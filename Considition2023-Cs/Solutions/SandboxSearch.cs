@@ -9,6 +9,11 @@ public class SandboxSearch
     internal static int MaxStations = 2;
     internal static int ChildCount = 800;
     internal static int Mutations = 2;
+
+    static int LongitudeMax = 0;
+    static int LongitudeMin = 0;
+    static int LatitudeMax = 0;
+    static int LatitudeMin = 0;
     struct ChildItem { 
         public int F3100Count {get; set;}
         public int F9100Count{get; set;}
@@ -18,7 +23,11 @@ public class SandboxSearch
     }
 
     public static async void Run(MapData mapData, GeneralData generalData, bool periodicSubmit)
-    {        
+    {      
+        LongitudeMax = (int)mapData.Border.LatitudeMax;  
+        LatitudeMax = (int)mapData.Border.LatitudeMax;
+        LongitudeMin = (int)mapData.Border.LongitudeMin;
+        LatitudeMin = (int)mapData.Border.LatitudeMin;
         var children = GetStartChildren(mapData);
         var fileName = mapData.MapName + ".txt";
         var male =  File.Exists(fileName) ? ReadBestFromFile(fileName) : children[0];        
@@ -60,7 +69,7 @@ public class SandboxSearch
                 var betterThanPreviousBest = bestValue > maxHistory.LastOrDefault();
                 if (betterThanPreviousBest)
                 {
-                    maxHistory.Clear();
+                    // maxHistory.Clear();
                     if (periodicSubmit)
                     {
                         await Submit(mapData, best.Clone() as ChildItem[], bestValue);
@@ -68,15 +77,15 @@ public class SandboxSearch
                     }
                 }
             }
-            maxHistory.Add(bestValue);
-            if (maxHistory.Count > 5)
-            {
-                var seed = Rnd.Next(1000);
-                Console.WriteLine("New Seed: " + seed);
-                Rnd = new Random(seed);
-                maxHistory.Clear();
-                maxHistory.Add(bestValue);
-            }            
+            // maxHistory.Add(bestValue);
+            // if (maxHistory.Count > 5)
+            // {
+            //     var seed = Rnd.Next(1000);
+            //     Console.WriteLine("New Seed: " + seed);
+            //     Rnd = new Random(seed);
+            //     maxHistory.Clear();
+            //     maxHistory.Add(bestValue);
+            // }            
         }
     }
 
@@ -236,8 +245,13 @@ public class SandboxSearch
             for (int m = 0; m < Mutations - 1; m++)
             {
                 var mutation = Rnd.Next(male.Length);
-                children[i][mutation].F3100Count = Rnd.Next(MaxStations + 1);
-                children[i][mutation].F9100Count = Rnd.Next(MaxStations + 1);
+                var what = Rnd.Next(3);
+                if (what == 0) children[i][mutation].F3100Count = Rnd.Next(MaxStations + 1);
+                if (what == 1) children[i][mutation].F9100Count = Rnd.Next(MaxStations + 1);
+                if (what == 2) {
+                    children[i][mutation].Latitude -= Rnd.Next(LatitudeMin, LatitudeMax);
+                    children[i][mutation].Longitude -= Rnd.Next(LongitudeMin, LongitudeMax);
+                } 
             }
             // TODO: also mutate other features
         }
