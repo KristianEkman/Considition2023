@@ -2,14 +2,13 @@ using Considition2023_Cs;
 using Considition2023_Cs.Solutions;
 using Newtonsoft.Json;
 using System.Diagnostics;
-using System.Text.Json;
 
 public class GeneticSearchFaster
 {
     static Random Rnd = new(777);
     internal static int MaxStations = 2;
     internal static int ChildCount = 1000;
-    internal static int Mutations = 3;
+    internal static int Mutations = 1;
 
     public static async void Run(MapData mapData, GeneralData generalData, bool periodicSubmit)
     {
@@ -19,7 +18,7 @@ public class GeneticSearchFaster
         var n = 0;
         var bestValue = 0d;
         var fileName = mapData.MapName + ".txt";
-        var selection = (int)(ChildCount * 0.8);
+        var selection = (int)(ChildCount * 0.9);
 
         while (true)
         {
@@ -42,7 +41,7 @@ public class GeneticSearchFaster
             while (true)
             {
                 n++;
-                MakeChildren(children, 0, Rnd.Next(1, 3));
+                MakeChildren(children, 0, Rnd.Next(selection));
                 children = EvaluateAndOrder(children, mapData, generalData);
 
                 var isBetter = children[0].Score > bestValue;
@@ -68,16 +67,16 @@ public class GeneticSearchFaster
                         }
                     }
                     maxHistory.Add(bestValue);
-                    //if (maxHistory.Count > 5)
-                    //{
-                    //    Console.WriteLine("Restart");
-                    //    break;
+                    if (maxHistory.Count > 5)
+                    {
+                        Console.WriteLine("Restart");
+                        break;
                     //    //var seed = Rnd.Next(1000);
                     //    //Console.WriteLine("New Seed: " + seed);
                     //    //Rnd = new Random(seed);
                     //    //maxHistory.Clear();
                     //    //maxHistory.Add(bestValue);
-                    //}
+                    }
                 }
             }
         }
@@ -172,19 +171,31 @@ public class GeneticSearchFaster
         for (int i = 1; i < children.Length; i++)
         {
             // todo: try more genes
-            var split = Rnd.Next(length);
-            Array.Copy(male.F3100Counts, 0, children[i].F3100Counts, 0, split);
-            Array.Copy(male.F9100Counts, 0, children[i].F9100Counts, 0, split);
+            var split = 0;
+            do {
+                var mLength = Rnd.Next(length / 4, length / 4 + 5);
+                if (split + mLength >= length)
+                    mLength = length - split;
 
-            Array.Copy(female.F3100Counts, split, children[i].F3100Counts, split, length - split);
-            Array.Copy(female.F9100Counts, split, children[i].F9100Counts, split, length - split);
+                if (mLength == 0)
+                    break;
 
-            for (int m = 0; m < Mutations; m++)
+                if (mLength % 2 == 0)
+                {
+                    Array.Copy(male.F3100Counts, split, children[i].F3100Counts, split, mLength);
+                    Array.Copy(male.F9100Counts, split, children[i].F9100Counts, split, mLength);    
+                } else {
+                    Array.Copy(female.F3100Counts, split, children[i].F3100Counts, split, mLength);
+                    Array.Copy(female.F9100Counts, split, children[i].F9100Counts, split, mLength);
+                }
+                split += mLength;
+            } while(true);
+
+            for (int x = 0; x < Mutations; x++)
             {
-                var mutation = Rnd.Next(length);
-                children[i].F3100Counts[mutation] = Rnd.Next(MaxStations + 1);
-                children[i].F9100Counts[mutation] = Rnd.Next(MaxStations + 1);
-            }
+                children[i].F9100Counts[Rnd.Next(length)] = Rnd.Next(MaxStations + 1);
+                children[i].F3100Counts[Rnd.Next(length)] = Rnd.Next(MaxStations + 1);    
+            }            
         }
     }
 
