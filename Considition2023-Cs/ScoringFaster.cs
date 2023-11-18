@@ -371,10 +371,10 @@ namespace Considition2023_Cs
 
         private static int DistanceBetweenPoint(this StoreLocationScoring location1, StoreLocationScoring location2)
         {
-            if (Scoring.Distances[location1.IndexKey][location2.IndexKey] != 0)
-                return Scoring.Distances[location1.IndexKey][location2.IndexKey];
-            if (Scoring.Distances[location2.IndexKey][location1.IndexKey] != 0)
-                return Scoring.Distances[location2.IndexKey][location1.IndexKey];
+            if (DistanceCache.Values[location1.IndexKey][location2.IndexKey] != 0)
+                return DistanceCache.Values[location1.IndexKey][location2.IndexKey];
+            if (DistanceCache.Values[location2.IndexKey][location1.IndexKey] != 0)
+                return DistanceCache.Values[location2.IndexKey][location1.IndexKey];
 
             double latitude1 = location1.Latitude;
             double longitude1 = location1.Longitude;
@@ -396,18 +396,18 @@ namespace Considition2023_Cs
 
             int distance = (int)Math.Round(r * c, 0);
 
-            Scoring.Distances[location1.IndexKey][location2.IndexKey] = distance;
-            Scoring.Distances[location2.IndexKey][location1.IndexKey] = distance;
+            DistanceCache.Values[location1.IndexKey][location2.IndexKey] = distance;
+            DistanceCache.Values[location2.IndexKey][location1.IndexKey] = distance;
 
             return distance;
         }
 
         private static int DistanceBetweenPoint(this Hotspot location1, StoreLocationScoring location2)
         {
-            if (Scoring.Distances[location1.IndexKey][location2.IndexKey] != 0)
-                return Scoring.Distances[location1.IndexKey][location2.IndexKey];
-            if (Scoring.Distances[location2.IndexKey][location1.IndexKey] != 0)
-                return Scoring.Distances[location2.IndexKey][location1.IndexKey];
+            if (DistanceCache.Values[location1.IndexKey][location2.IndexKey] != 0)
+                return DistanceCache.Values[location1.IndexKey][location2.IndexKey];
+            if (DistanceCache.Values[location2.IndexKey][location1.IndexKey] != 0)
+                return DistanceCache.Values[location2.IndexKey][location1.IndexKey];
 
             double latitude1 = location1.Latitude;
             double longitude1 = location1.Longitude;
@@ -429,19 +429,12 @@ namespace Considition2023_Cs
 
             int distance = (int)Math.Round(r * c, 0);
 
-            Scoring.Distances[location1.IndexKey][location2.IndexKey] = distance;
-            Scoring.Distances[location2.IndexKey][location1.IndexKey] = distance;
+            DistanceCache.Values[location1.IndexKey][location2.IndexKey] = distance;
+            DistanceCache.Values[location2.IndexKey][location1.IndexKey] = distance;
 
             return distance;
         }
 
-        public static int[][] Distances { get; set; } = new int[5000][];
-
-        internal static void NewDistancesCache()
-        {
-            for (int i = 0; i < Distances.Length; i++)
-                Distances[i] = new int[5000];
-        }
 
     }
 }

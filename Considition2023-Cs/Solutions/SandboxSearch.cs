@@ -6,14 +6,14 @@ using Newtonsoft.Json;
 public class SandboxSearch
 {
     static Random Rnd = new(777);
-    internal static int MaxStations = 2;
-    internal static int ChildCount = 800;
-    internal static int Mutations = 2;
+    internal static int MaxStations = 4;
+    internal static int ChildCount = 400;
+    internal static int Mutations = 3;
 
-    static int LongitudeMax = 0;
-    static int LongitudeMin = 0;
-    static int LatitudeMax = 0;
-    static int LatitudeMin = 0;
+    static double LongitudeMax = 0;
+    static double LongitudeMin = 0;
+    static double LatitudeMax = 0;
+    static double LatitudeMin = 0;
     struct ChildItem { 
         public int F3100Count {get; set;}
         public int F9100Count{get; set;}
@@ -24,17 +24,17 @@ public class SandboxSearch
 
     public static async void Run(MapData mapData, GeneralData generalData, bool periodicSubmit)
     {      
-        LongitudeMax = (int)mapData.Border.LatitudeMax;  
-        LatitudeMax = (int)mapData.Border.LatitudeMax;
-        LongitudeMin = (int)mapData.Border.LongitudeMin;
-        LatitudeMin = (int)mapData.Border.LatitudeMin;
+        LongitudeMax = mapData.Border.LongitudeMax;  
+        LatitudeMax = mapData.Border.LatitudeMax;
+        LongitudeMin = mapData.Border.LongitudeMin;
+        LatitudeMin = mapData.Border.LatitudeMin;
         var children = GetStartChildren(mapData);
         var fileName = mapData.MapName + ".txt";
         var male =  File.Exists(fileName) ? ReadBestFromFile(fileName) : children[0];        
         var female = children[1];
         var size = male.Length;
                 
-        Scoring.NewDistancesCache();
+        DistanceCache.Reset();
         var k = 0;
         foreach (var loc in mapData.locations)
             loc.Value.IndexKey = k++;
@@ -61,31 +61,34 @@ public class SandboxSearch
                 bestValue = twoBest[0].Value;
                 bestScore = twoBest[0];
                 Array.Copy(children[twoBest[0].Index], best, best.Length);
+                
             }
 
-            if (n % 10 == 0)
+            if (n % 30 == 0)
             {
                 Console.WriteLine($"{n}. {bestScore.Total.ToSI()}pt, {bestScore.Earnings.ToSI()}kr, {bestScore.KgCo2Savings}kg");
                 var betterThanPreviousBest = bestValue > maxHistory.LastOrDefault();
                 if (betterThanPreviousBest)
                 {
-                    // maxHistory.Clear();
+                    maxHistory.Clear();
                     if (periodicSubmit)
                     {
                         await Submit(mapData, best.Clone() as ChildItem[], bestValue);
                         File.WriteAllText(fileName, JsonConvert.SerializeObject(best));
                     }
                 }
+
+
+                maxHistory.Add(bestValue);
+                if (maxHistory.Count > 5)
+                {
+                    var seed = Rnd.Next(1000);
+                    Console.WriteLine("New Seed: " + seed);
+                    Rnd = new Random(seed);
+                    maxHistory.Clear();
+                    maxHistory.Add(bestValue);
+                }
             }
-            // maxHistory.Add(bestValue);
-            // if (maxHistory.Count > 5)
-            // {
-            //     var seed = Rnd.Next(1000);
-            //     Console.WriteLine("New Seed: " + seed);
-            //     Rnd = new Random(seed);
-            //     maxHistory.Clear();
-            //     maxHistory.Add(bestValue);
-            // }            
         }
     }
 
@@ -200,8 +203,8 @@ public class SandboxSearch
     {
         var topList = new List<(int Index, double Total, double Earnings, double KgCo2Savings, double v)>();
         
-        for (int i = 0;i < children.Length;i++)
-        //Parallel.For(0, children.Length, (int i) =>
+        //for (int i = 0;i < children.Length;i++)
+        Parallel.For(0, children.Length, (int i) =>
             {
                 SubmitSolution solution = new();
                 var child = children[i];
@@ -228,7 +231,7 @@ public class SandboxSearch
                     topList.Add((i, score.GameScore.Total, score.GameScore.Earnings, score.GameScore.KgCo2Savings, v));
                 }
             }
-        //);
+        );
 
         return topList.OrderByDescending(x => x.v).Take(2).ToArray();
     }
@@ -246,16 +249,27 @@ public class SandboxSearch
             {
                 var mutation = Rnd.Next(male.Length);
                 var what = Rnd.Next(3);
-                if (what == 0) children[i][mutation].F3100Count = Rnd.Next(MaxStations + 1);
-                if (what == 1) children[i][mutation].F9100Count = Rnd.Next(MaxStations + 1);
+                if (what == 0) children[i][mutation].F3100Count = Rnd.Next(3);
+                if (what == 1) children[i][mutation].F9100Count = Rnd.Next(3);
                 if (what == 2) {
-                    children[i][mutation].Latitude -= Rnd.Next(LatitudeMin, LatitudeMax);
-                    children[i][mutation].Longitude -= Rnd.Next(LongitudeMin, LongitudeMax);
+                    children[i][mutation].Latitude = RandomLatitude();
+                    children[i][mutation].Longitude = RandomLongitude();
                 } 
             }
             // TODO: also mutate other features
         }
     }
+
+    private static double RandomLongitude()
+    {
+        return Rnd.NextDouble() * (LongitudeMax - LongitudeMin) + LongitudeMin;
+    }
+
+    private static double RandomLatitude()
+    {
+        return Rnd.NextDouble() * (LatitudeMax - LatitudeMax) + LatitudeMin;
+    }
+
     private static ChildItem[] ReadBestFromFile(string fileName)
     {
         Console.WriteLine("Read " + fileName);

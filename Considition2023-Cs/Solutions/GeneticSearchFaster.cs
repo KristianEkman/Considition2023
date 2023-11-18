@@ -14,7 +14,7 @@ public class GeneticSearchFaster
     {
         var size = mapData.locations.Count;
         Console.WriteLine($"{mapData.MapName} has {size} locations");
-        Scoring.NewDistancesCache();
+        DistanceCache.Reset();
         var n = 0;
         var bestValue = 0d;
         var fileName = mapData.MapName + ".txt";

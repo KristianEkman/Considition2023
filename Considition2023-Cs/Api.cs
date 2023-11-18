@@ -52,6 +52,10 @@ internal class Api
         request.Content = new StringContent(JsonConvert.SerializeObject(solution), System.Text.Encoding.UTF8, "application/json");
         HttpResponseMessage response = _httpClient.Send(request);
         string responseText = await response.Content.ReadAsStringAsync();
+        if (!response.IsSuccessStatusCode)
+        {
+            Console.WriteLine(responseText);
+        }
         response.EnsureSuccessStatusCode();
         return JsonConvert.DeserializeObject<GameData>(responseText);
     }

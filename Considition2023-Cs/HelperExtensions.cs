@@ -52,7 +52,7 @@ namespace Considition2023_Cs
                 case "vasteras":
                     return score > 1498;
                 case "g-sandbox":
-                    return score > 2320;
+                    return score > 4000;
             }
             return false;
         }

@@ -4,11 +4,11 @@ TODO
 Smartare distribuering av mutationer
 	* ChildCount = size
 	* +1 eller -1
-	* inte runda av total score
+	
 
 Sandbox
 * Söka fram bästa position innan Station Count
-* Sanbox multi thread
+
 
 * Optimera scoring-funktionen
 
@@ -25,7 +25,7 @@ KgCo2Savings för alla locations
 	TotalFootFall = Summan av alla FootFall
 
 * Placering med hänsyn till närliggande.
-* Räkna ut att capaciteten blir så bra som möjligt
+* Räkna ut att kapaciteten blir så bra som möjligt
 
 DONE
 ====
@@ -41,4 +41,5 @@ Sätta submitgräns på träningsbanor
 Jämföra prodscore och local score, printa diff.
 Spara bästa matris och ladda den vid start
 start-parametrar
-
+Inte runda av total score
+Sanbox multi thread

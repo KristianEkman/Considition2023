@@ -17,7 +17,7 @@ public class GeneticSearch
         var female = RandomArray(size);
         var children = new (int, int)[ChildCount][];
         var names = mapData.locations.Select(x => x.Value.LocationName).ToArray();
-        Scoring.NewDistancesCache();
+        DistanceCache.Reset();
         var k = 0;
         foreach (var loc in mapData.locations)
             loc.Value.IndexKey = k++;        
