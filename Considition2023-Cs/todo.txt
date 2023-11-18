@@ -1,24 +1,20 @@
 TODO
 ====
 
-Visa prestanda på sandbox
-
-.net 8
-
 Storlek på cache = locations + hotspots
-
-Konfigurera om värden ska avrundas.
 
 Rampa upp ChildCount vid restarts.
 
 Fixa nätverkskabel
+
+Visa usage
 
 Sandbox
 * Söka fram bästa position innan Station Count
 * fundera på bättre sortering, spread och footfall
 
 
-* Optimera scoring-funktionen
+Optimera scoring-funktionen
 
 
 * Reda ut matematiskt, hur ser de olika beroendena ut.
@@ -51,3 +47,6 @@ Spara bästa matris och ladda den vid start
 start-parametrar
 Inte runda av total score
 Sanbox multi thread
+Visa prestanda på sandbox
+.net 8
+Konfigurera om värden ska avrundas.
