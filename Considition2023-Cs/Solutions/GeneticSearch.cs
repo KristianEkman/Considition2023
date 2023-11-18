@@ -8,6 +8,7 @@ public class GeneticSearch
     internal static int MaxStations = 2;
     internal static int ChildCount = 400;    
     internal static int Mutations = 3;
+    internal static bool Rounding = false;
 
     public static void Run(MapData mapData, GeneralData generalData, bool periodicSubmit, Func<Score, double> optimizeFor, bool optimizeLow)
     {

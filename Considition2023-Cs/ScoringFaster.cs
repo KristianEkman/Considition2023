@@ -10,7 +10,7 @@ namespace Considition2023_Cs
     {
         public static List<string> SandBoxMaps { get; } = new List<string> { "s-sandbox", "g-sandbox" };
 
-        public static double CalculateScore(SubmitSolution solution, MapData mapEntity, GeneralData generalData, bool sandBox = false, bool distCache = true)
+        public static double CalculateScore(SubmitSolution solution, MapData mapEntity, GeneralData generalData, bool sandBox = false, bool distCache = true, bool rounding = false)
         {
             var Locations = new Dictionary<int, StoreLocationScoring>();
             var KgCo2Savings = 0d;
@@ -86,7 +86,8 @@ namespace Considition2023_Cs
             foreach (KeyValuePair<int, StoreLocationScoring> kvp in Locations)
             {
                 var loc = kvp.Value;
-                //loc.SalesVolume = Math.Round(loc.SalesVolume, 0);
+                if (rounding)
+                    loc.SalesVolume = Math.Round(loc.SalesVolume, 0);
                 if (loc.Footfall <= 0 && sandBox)
                 {
                     loc.SalesVolume = 0;
@@ -113,16 +114,22 @@ namespace Considition2023_Cs
             }
 
             //Just some rounding for nice whole numbers
-            // TotalRevenue = Math.Round(TotalRevenue, 2);
-            // KgCo2Savings = Math.Round(KgCo2Savings, 2);
-            // TotalFootfall = Math.Round(TotalFootfall, 4);
+            if (rounding)
+            {
+                TotalRevenue = Math.Round(TotalRevenue, 2);
+                KgCo2Savings = Math.Round(KgCo2Savings, 2);
+                TotalFootfall = Math.Round(TotalFootfall, 4);
+            }
 
             //Calculate Earnings
             var earnings = (TotalRevenue - TotalLeasingCost) / 1000;
 
             //Calculate total score
-            return 
+            if (rounding)
+                return Math.Round(
                 (KgCo2Savings * generalData.Co2PricePerKiloInSek + earnings) *
+                (1 + TotalFootfall), 2);
+            return (KgCo2Savings * generalData.Co2PricePerKiloInSek + earnings) *
                 (1 + TotalFootfall);
         }
 

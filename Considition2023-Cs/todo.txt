@@ -1,13 +1,21 @@
 TODO
 ====
 
-Smartare distribuering av mutationer
-	* ChildCount = size
-	* +1 eller -1
-	
+Visa prestanda på sandbox
+
+.net 8
+
+Storlek på cache = locations + hotspots
+
+Konfigurera om värden ska avrundas.
+
+Rampa upp ChildCount vid restarts.
+
+Fixa nätverkskabel
 
 Sandbox
 * Söka fram bästa position innan Station Count
+* fundera på bättre sortering, spread och footfall
 
 
 * Optimera scoring-funktionen

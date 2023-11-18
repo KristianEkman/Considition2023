@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text.Json.Nodes;
 using Considition2023_Cs;
 using Considition2023_Cs.Solutions;
@@ -9,6 +10,8 @@ public class SandboxSearch
     const int MaxStations = 2;
     internal static int ChildCount = 500;
     internal static int Mutations = 3;
+    internal static bool Rounding = false;
+
 
     static double LongitudeMax = 0;
     static double LongitudeMin = 0;
@@ -46,7 +49,9 @@ public class SandboxSearch
         (int Index, double Total) bestScore = default;
         (int Index, double Total)[] twoBest;
         var best = new ChildItem[size];
-        
+        var stopWatch = Stopwatch.StartNew();
+
+
         while (true)
         {
             var maxHistory = new List<double>() { bestValue };
@@ -69,7 +74,9 @@ public class SandboxSearch
 
                 if (n % 50 == 0)
                 {
-                    Console.WriteLine($"{n}. {bestScore.Total:0.##}pt");
+                    var speed = ((50 * ChildCount) / (double)stopWatch.ElapsedMilliseconds).ToString("0.##");
+                    stopWatch.Restart();
+                    Console.WriteLine($"{n}. {bestScore.Total:0.##}pt\t{speed} evs/ms");
                     var betterThanPreviousBest = bestValue > maxHistory.LastOrDefault();
                     if (betterThanPreviousBest)
                     {
@@ -204,7 +211,7 @@ public class SandboxSearch
                     }
                 }
 
-                var score = ScoringFaster.CalculateScore(solution, mapData, generalData, true, distanceCache);
+                var score = ScoringFaster.CalculateScore(solution, mapData, generalData, true, distanceCache, Rounding);
 
                 lock (topList)
                 {

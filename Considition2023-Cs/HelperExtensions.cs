@@ -48,7 +48,7 @@ namespace Considition2023_Cs
                 case "linkoping":
                     return score > 699;
                 case "uppsala":
-                    return score > 2416;
+                    return score > 2417;
                 case "vasteras":
                     return score > 1498;
                 case "g-sandbox":

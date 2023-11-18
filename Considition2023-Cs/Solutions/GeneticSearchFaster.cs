@@ -1,14 +1,14 @@
 using Considition2023_Cs;
 using Considition2023_Cs.Solutions;
 using System.Diagnostics;
-using System.Text.Json;
 
 public class GeneticSearchFaster
 {
     static Random Rnd = new(777);
     const int MaxStations = 2;
     internal static int ChildCount = 500;
-    internal static int Mutations = 1;
+    internal static int Mutations = 2;
+    internal static bool Rounding = false;
 
     public static void Run(MapData mapData, GeneralData generalData, bool periodicSubmit)
     {
@@ -138,7 +138,7 @@ public class GeneticSearchFaster
                     }
                 }
 
-                var score = ScoringFaster.CalculateScore(solution, mapData, generalData);                
+                var score = ScoringFaster.CalculateScore(solution, mapData, generalData, false, true, Rounding);                
                 lock (topList)
                 {
                     topList.Add((i, score));

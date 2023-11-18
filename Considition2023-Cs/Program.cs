@@ -46,6 +46,12 @@ void Parse(string[] args)
                 SandboxSearch.Mutations = int.Parse(split[1]);
                 Console.WriteLine($"Mutations={split[1]}");
                 break;
+            case "Roundnig":
+                GeneticSearch.Rounding = split[1] == "true";
+                GeneticSearchFaster.Rounding = split[1] == "true"; ;
+                SandboxSearch.Rounding = split[1] == "true"; ;
+                Console.WriteLine($"Rounding={split[1]}");
+                break;
             case "Map":
                 Console.WriteLine($"Map={split[1]}");
                 mapName = split[1];
