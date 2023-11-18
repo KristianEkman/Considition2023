@@ -10,7 +10,7 @@ public class GeneticSearchFaster
     internal static int ChildCount = 500;
     internal static int Mutations = 1;
 
-    public static async void Run(MapData mapData, GeneralData generalData, bool periodicSubmit)
+    public static void Run(MapData mapData, GeneralData generalData, bool periodicSubmit)
     {
         var size = mapData.locations.Count;
         Console.WriteLine($"{mapData.MapName} has {size} locations");
@@ -67,7 +67,7 @@ public class GeneticSearchFaster
                         maxHistory.Clear();
                         if (periodicSubmit)
                         {
-                            Submit(mapData, names, best.Clone() as (int, int)[], bestValue);
+                            Submit(mapData, names, best.Clone() as (int, int)[], bestValue);                            
                             File.WriteAllText(mapData.MapName + ".txt", string.Join(";", best));
                         }
                     }
@@ -99,7 +99,7 @@ public class GeneticSearchFaster
         return list.ToArray();
     }
 
-    private static async Task Submit(MapData mapData, string[] names, (int, int)[] best, double localScore)
+    private static void Submit(MapData mapData, string[] names, (int, int)[] best, double localScore)
     {
         SubmitSolution solution = new();
         for (var j = 0; j < best.Length; j++)
@@ -114,7 +114,7 @@ public class GeneticSearchFaster
             }
         }
 
-        await  SolutionBase.SubmitSolution(mapData, localScore, solution);
+        SolutionBase.SubmitSolutionAsync(mapData, localScore, solution);
     }    
 
     private static (int, double) [] Evaluate((int, int)[][] children, MapData mapData, GeneralData generalData) {

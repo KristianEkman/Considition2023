@@ -23,7 +23,7 @@ public class SandboxSearch
         public double Latitude { get; set; }
     }
 
-    public static async void Run(MapData mapData, GeneralData generalData, bool periodicSubmit)
+    public static void Run(MapData mapData, GeneralData generalData, bool periodicSubmit)
     {
         LongitudeMax = mapData.Border.LongitudeMax;
         LatitudeMax = mapData.Border.LatitudeMax;
@@ -76,8 +76,7 @@ public class SandboxSearch
                         maxHistory.Clear();
                         if (periodicSubmit)
                         {
-                            // TODO: utred om det här borde göras parallellt
-                            await Submit(mapData, best.Clone() as ChildItem[], bestValue);
+                            Submit(mapData, best.Clone() as ChildItem[], bestValue);
                             File.WriteAllText(fileName, JsonConvert.SerializeObject(best));
                         }
                     }
@@ -157,7 +156,7 @@ public class SandboxSearch
         return latitude;
     }
 
-    private static async Task Submit(MapData mapData, ChildItem[] best, double localScore)
+    private static void Submit(MapData mapData, ChildItem[] best, double localScore)
     {
         SubmitSolution solution = new();
         for (var j = 0; j < best.Length; j++)
@@ -176,7 +175,7 @@ public class SandboxSearch
         }
 
         Scoring.SandboxValidation(mapData.MapName, solution, mapData);
-        await SolutionBase.SubmitSolution(mapData, localScore, solution);
+        SolutionBase.SubmitSolutionAsync(mapData, localScore, solution);
     }
 
     private static (int Index, double Total)[] Evaluate(

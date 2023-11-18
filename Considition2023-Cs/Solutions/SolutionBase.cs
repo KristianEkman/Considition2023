@@ -8,10 +8,10 @@ namespace Considition2023_Cs.Solutions
 {
     internal static class SolutionBase
     {
-        internal static async Task SubmitSolution(MapData mapData, double localScore, SubmitSolution solution)
+        internal static async Task SubmitSolutionAsync(MapData mapData, double localScore, SubmitSolution solution)
         {
             if (localScore.IsToGood(mapData.MapName)) return;
-
+                        
             HttpClient client = new();
             Api api = new(client);
             var prodScore = await api.SumbitAsync(mapData.MapName, solution, HelperExtensions.Apikey);

@@ -9,7 +9,7 @@ public class GeneticSearch
     internal static int ChildCount = 400;    
     internal static int Mutations = 3;
 
-    public static async void Run(MapData mapData, GeneralData generalData, bool periodicSubmit, Func<Score, double> optimizeFor, bool optimizeLow)
+    public static void Run(MapData mapData, GeneralData generalData, bool periodicSubmit, Func<Score, double> optimizeFor, bool optimizeLow)
     {
         var size = mapData.locations.Count;
         var fileName = mapData.MapName + ".txt";
@@ -56,7 +56,7 @@ public class GeneticSearch
                 if (optimizeLow && bestValue == 0d)
                 {
                     // found the target score
-                    await Submit(mapData, names, best.Clone() as (int, int)[], bestValue);
+                    Submit(mapData, names, best.Clone() as (int, int)[], bestValue);
                     break;
                 }
             }
@@ -101,7 +101,7 @@ public class GeneticSearch
         return list.ToArray();
     }
 
-    private static async Task Submit(MapData mapData, string[] names, (int, int)[] best, double localScore)
+    private static void Submit(MapData mapData, string[] names, (int, int)[] best, double localScore)
     {
         SubmitSolution solution = new();
         for (var j = 0; j < best.Length; j++)
@@ -116,7 +116,7 @@ public class GeneticSearch
             }
         }
 
-        await  SolutionBase.SubmitSolution(mapData, localScore, solution);
+        SolutionBase.SubmitSolutionAsync(mapData, localScore, solution);
     }    
 
     private static (int Index, double Total, double Earnings, double KgCo2Savings, double v)[] Evaluate(
