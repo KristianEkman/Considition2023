@@ -10,7 +10,7 @@ namespace Considition2023_Cs
     {
         public static List<string> SandBoxMaps { get; } = new List<string> { "s-sandbox", "g-sandbox" };
 
-        public static double CalculateScore(SubmitSolution solution, MapData mapEntity, GeneralData generalData, bool sandBox = false)
+        public static double CalculateScore(SubmitSolution solution, MapData mapEntity, GeneralData generalData, bool sandBox = false, bool distCache = true)
         {
             var Locations = new Dictionary<int, StoreLocationScoring>();
             var KgCo2Savings = 0d;
@@ -73,15 +73,15 @@ namespace Considition2023_Cs
                     return 0;
 
                 //Distribute sales from locations without a refill station to those with.
-                Locations = DistributeSales(Locations, locationListNoRefillStation, generalData);
+                Locations = DistributeSales(Locations, locationListNoRefillStation, generalData, distCache);
             }
             else
             {
-                Locations = InitiateSandboxLocations(Locations, generalData, solution);
-                Locations = CalcualteFootfall(Locations, mapEntity);
+                Locations = InitiateSandboxLocations(Locations, generalData, solution, distCache);
+                Locations = CalcualteFootfall(Locations, mapEntity, distCache);
             }
 
-            Locations = DivideFootfall(Locations, generalData);
+            Locations = DivideFootfall(Locations, generalData, distCache);
 
             foreach (KeyValuePair<int, StoreLocationScoring> kvp in Locations)
             {
@@ -126,7 +126,7 @@ namespace Considition2023_Cs
                 (1 + TotalFootfall);
         }
 
-        private static Dictionary<int, StoreLocationScoring> DistributeSales(Dictionary<int, StoreLocationScoring> with, Dictionary<int, StoreLocationScoring> without, GeneralData generalData)
+        private static Dictionary<int, StoreLocationScoring> DistributeSales(Dictionary<int, StoreLocationScoring> with, Dictionary<int, StoreLocationScoring> without, GeneralData generalData, bool useCache)
         {
             foreach (KeyValuePair<int, StoreLocationScoring> kvpWithout in without)
             {
@@ -135,7 +135,7 @@ namespace Considition2023_Cs
 
                 foreach (KeyValuePair<int, StoreLocationScoring> kvpWith in with)
                 {
-                    int distance = kvpWithout.Value.DistanceBetweenPoint(kvpWith.Value);
+                    int distance = kvpWithout.Value.DistanceBetweenPoint(kvpWith.Value, useCache);
                     if (distance < generalData.WillingnessToTravelInMeters)
                     {
                         distributeSalesTo[kvpWith.Value.IndexKey] = distance;
@@ -163,14 +163,14 @@ namespace Considition2023_Cs
             return with;
         }
 
-        public static Dictionary<int, StoreLocationScoring> CalcualteFootfall(Dictionary<int, StoreLocationScoring> locations, MapData mapEntity)
+        public static Dictionary<int, StoreLocationScoring> CalcualteFootfall(Dictionary<int, StoreLocationScoring> locations, MapData mapEntity, bool useCache)
         {
             double maxFootfall = 0;
             foreach (KeyValuePair<int, StoreLocationScoring> kvpLoc in locations)
             {
                 foreach (Hotspot hotspot in mapEntity.Hotspots)
                 {
-                    double distanceInMeters = hotspot.DistanceBetweenPoint(kvpLoc.Value);
+                    double distanceInMeters = hotspot.DistanceBetweenPoint(kvpLoc.Value, useCache);
                         
                     double maxSpread = hotspot.Spread;
                     if (distanceInMeters <= maxSpread)
@@ -211,7 +211,7 @@ namespace Considition2023_Cs
             }
             return 0;
         }
-        public static Dictionary<int, StoreLocationScoring> InitiateSandboxLocations(Dictionary<int, StoreLocationScoring> locations, GeneralData generalData, SubmitSolution request)
+        public static Dictionary<int, StoreLocationScoring> InitiateSandboxLocations(Dictionary<int, StoreLocationScoring> locations, GeneralData generalData, SubmitSolution request, bool useCache)
         {
             foreach (KeyValuePair<string, PlacedLocations> kvpLoc in request.Locations)
             {
@@ -242,7 +242,7 @@ namespace Considition2023_Cs
                 {
                     if (kvpScope.Key != kvpSurrounding.Key)
                     {
-                        int distance = kvpScope.Value.DistanceBetweenPoint(kvpSurrounding.Value);
+                        int distance = kvpScope.Value.DistanceBetweenPoint(kvpSurrounding.Value, useCache);
                             
                         if (distance < generalData.WillingnessToTravelInMeters)
                         {
@@ -257,7 +257,7 @@ namespace Considition2023_Cs
             return locations;
         }
 
-        public static Dictionary<int, StoreLocationScoring> DivideFootfall(Dictionary<int, StoreLocationScoring> locations, GeneralData generalData)
+        public static Dictionary<int, StoreLocationScoring> DivideFootfall(Dictionary<int, StoreLocationScoring> locations, GeneralData generalData, bool useCache)
         {
             foreach (KeyValuePair<int, StoreLocationScoring> kvpScope in locations)
             {
@@ -266,7 +266,7 @@ namespace Considition2023_Cs
                 {
                     if (kvpScope.Key != kvpSurrounding.Key)
                     {
-                        int distance = kvpScope.Value.DistanceBetweenPoint(kvpSurrounding.Value);
+                        int distance = kvpScope.Value.DistanceBetweenPoint(kvpSurrounding.Value, useCache);
                             
                         if (distance < generalData.WillingnessToTravelInMeters)
                         {
@@ -369,12 +369,15 @@ namespace Considition2023_Cs
             return null;
         }
 
-        private static int DistanceBetweenPoint(this StoreLocationScoring location1, StoreLocationScoring location2)
+        private static int DistanceBetweenPoint(this StoreLocationScoring location1, StoreLocationScoring location2, bool useCache)
         {
-            if (DistanceCache.Values[location1.IndexKey][location2.IndexKey] != 0)
-                return DistanceCache.Values[location1.IndexKey][location2.IndexKey];
-            if (DistanceCache.Values[location2.IndexKey][location1.IndexKey] != 0)
-                return DistanceCache.Values[location2.IndexKey][location1.IndexKey];
+            if (useCache)
+            {
+                if (DistanceCache.Values[location1.IndexKey][location2.IndexKey] != 0)
+                    return DistanceCache.Values[location1.IndexKey][location2.IndexKey];
+                if (DistanceCache.Values[location2.IndexKey][location1.IndexKey] != 0)
+                    return DistanceCache.Values[location2.IndexKey][location1.IndexKey];
+            }
 
             double latitude1 = location1.Latitude;
             double longitude1 = location1.Longitude;
@@ -396,18 +399,24 @@ namespace Considition2023_Cs
 
             int distance = (int)Math.Round(r * c, 0);
 
-            DistanceCache.Values[location1.IndexKey][location2.IndexKey] = distance;
-            DistanceCache.Values[location2.IndexKey][location1.IndexKey] = distance;
+            if (useCache)
+            {
+                DistanceCache.Values[location1.IndexKey][location2.IndexKey] = distance;
+                DistanceCache.Values[location2.IndexKey][location1.IndexKey] = distance;
+            }
 
             return distance;
         }
 
-        private static int DistanceBetweenPoint(this Hotspot location1, StoreLocationScoring location2)
+        private static int DistanceBetweenPoint(this Hotspot location1, StoreLocationScoring location2, bool useCache)
         {
-            if (DistanceCache.Values[location1.IndexKey][location2.IndexKey] != 0)
-                return DistanceCache.Values[location1.IndexKey][location2.IndexKey];
-            if (DistanceCache.Values[location2.IndexKey][location1.IndexKey] != 0)
-                return DistanceCache.Values[location2.IndexKey][location1.IndexKey];
+            if (useCache)
+            {
+                if (DistanceCache.Values[location1.IndexKey][location2.IndexKey] != 0)
+                    return DistanceCache.Values[location1.IndexKey][location2.IndexKey];
+                if (DistanceCache.Values[location2.IndexKey][location1.IndexKey] != 0)
+                    return DistanceCache.Values[location2.IndexKey][location1.IndexKey];
+            }
 
             double latitude1 = location1.Latitude;
             double longitude1 = location1.Longitude;
@@ -429,12 +438,13 @@ namespace Considition2023_Cs
 
             int distance = (int)Math.Round(r * c, 0);
 
-            DistanceCache.Values[location1.IndexKey][location2.IndexKey] = distance;
-            DistanceCache.Values[location2.IndexKey][location1.IndexKey] = distance;
+            if (useCache)
+            {
+                DistanceCache.Values[location1.IndexKey][location2.IndexKey] = distance;
+                DistanceCache.Values[location2.IndexKey][location1.IndexKey] = distance;
+            }
 
             return distance;
         }
-
-
     }
 }

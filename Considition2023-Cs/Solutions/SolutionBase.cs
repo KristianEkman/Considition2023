@@ -14,13 +14,13 @@ namespace Considition2023_Cs.Solutions
 
             HttpClient client = new();
             Api api = new(client);
-            GameData prodScore = await api.SumbitAsync(mapData.MapName, solution, HelperExtensions.Apikey);
-            var result = $"\r\n{mapData.MapName}: {prodScore.Id} {prodScore.GameScore.Total.ToSI()} at {DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff")}";
+            var prodScore = await api.SumbitAsync(mapData.MapName, solution, HelperExtensions.Apikey);
+            var result = $"\r\n{mapData.MapName}: {prodScore.Id} {prodScore.GameScore.Total:0.##} at {DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}";
             Console.WriteLine(result);
             File.AppendAllText("resultslog.txt", result);
 
             if (localScore != prodScore.GameScore.Total)
-                Console.WriteLine($"DIFF!!:{localScore - prodScore.GameScore.Total}");
+                Console.WriteLine($"DIFF!!: {(localScore - prodScore.GameScore.Total) / (double)prodScore.GameScore.Total:P}");
         }
     }
 }

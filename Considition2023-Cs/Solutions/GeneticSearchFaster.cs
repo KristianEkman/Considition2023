@@ -6,7 +6,7 @@ using System.Text.Json;
 public class GeneticSearchFaster
 {
     static Random Rnd = new(777);
-    internal static int MaxStations = 2;
+    const int MaxStations = 2;
     internal static int ChildCount = 500;
     internal static int Mutations = 1;
 
