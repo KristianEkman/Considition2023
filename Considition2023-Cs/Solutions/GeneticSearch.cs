@@ -1,6 +1,5 @@
 using Considition2023_Cs;
 using Considition2023_Cs.Solutions;
-using System.Text.Json;
 
 public class GeneticSearch
 {
@@ -18,7 +17,7 @@ public class GeneticSearch
         var female = RandomArray(size);
         var children = new (int, int)[ChildCount][];
         var names = mapData.locations.Select(x => x.Value.LocationName).ToArray();
-        DistanceCache.Reset();
+        DistanceCache.Reset(size);
         var k = 0;
         foreach (var loc in mapData.locations)
             loc.Value.IndexKey = k++;        

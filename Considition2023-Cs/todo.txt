@@ -1,8 +1,6 @@
 TODO
 ====
 
-Storlek på cache = locations + hotspots
-
 Rampa upp ChildCount vid restarts.
 
 Fixa nätverkskabel
@@ -13,9 +11,7 @@ Sandbox
 * Söka fram bästa position innan Station Count
 * fundera på bättre sortering, spread och footfall
 
-
 Optimera scoring-funktionen
-
 
 * Reda ut matematiskt, hur ser de olika beroendena ut.
 Total = (KgCo2Savings * Co2PricePerKiloInSek + Earnings) * (1 + TotalFootfall)
@@ -50,3 +46,4 @@ Sanbox multi thread
 Visa prestanda på sandbox
 .net 8
 Konfigurera om värden ska avrundas.
+Storlek på cache = locations

@@ -14,7 +14,7 @@ public class GeneticSearchFaster
     {
         var size = mapData.locations.Count;
         Console.WriteLine($"{mapData.MapName} has {size} locations");
-        DistanceCache.Reset();
+        DistanceCache.Reset(size);
         var n = 0;
         var bestValue = 0d;
         var fileName = mapData.MapName + ".txt";
@@ -89,6 +89,7 @@ public class GeneticSearchFaster
 
     private static (int, int)[] ReadBestFromFile(string fileName)
     {
+        Console.WriteLine("Reading" + fileName);
         var items = File.ReadAllText(fileName).Split(";");
         var list = new List<(int, int)>();
         foreach (var item in items)
