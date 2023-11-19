@@ -72,7 +72,7 @@ public class GeneticSearchFaster
                         }
                     }
                     maxHistory.Add(bestValue);
-                    if (maxHistory.Count > 5)
+                    if (maxHistory.Count > 3)
                     {
                         Console.WriteLine("Restart");
                         break;
