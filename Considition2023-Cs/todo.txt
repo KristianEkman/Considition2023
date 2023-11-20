@@ -1,17 +1,9 @@
 TODO
 ====
 
-Smartare MakeChildren
-Ej random vid mutation child index, utan ta en i taget.
-
-
-Rampa upp ChildCount vid restarts.
-
-Bättre random funktion.
-
 Fixa nätverkskabel
 
-Visa usage
+Rampa upp ChildCount vid restarts.
 
 Sandbox
 * Söka fram bästa position innan Station Count
@@ -53,3 +45,9 @@ Visa prestanda på sandbox
 .net 8
 Konfigurera om värden ska avrundas.
 Storlek på cache = locations
+
+
+En bra rutin:
+Börja med Children: 400. Runding false, Mutations 1
+Dubble children när score stannat under 15 rundor.
+Byt till rounding true

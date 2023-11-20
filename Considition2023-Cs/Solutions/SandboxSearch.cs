@@ -17,6 +17,9 @@ public class SandboxSearch
     static double LongitudeMin = 0;
     static double LatitudeMax = 0;
     static double LatitudeMin = 0;
+    static double[] LatStep;
+    static double[] LongStep;
+
     struct ChildItem
     {
         public int F3100Count { get; set; }
@@ -32,6 +35,9 @@ public class SandboxSearch
         LatitudeMax = mapData.Border.LatitudeMax;
         LongitudeMin = mapData.Border.LongitudeMin;
         LatitudeMin = mapData.Border.LatitudeMin;
+        LatStep = [(LatitudeMax - LatitudeMin) / 50, -(LatitudeMax - LatitudeMin) / 50];
+        LongStep = [(LongitudeMax - LongitudeMin) / 50, -(LongitudeMax - LongitudeMin) / 50];
+
         var children = GetStartChildren(mapData);
         var fileName = mapData.MapName + ".txt";
         var male = File.Exists(fileName) ? ReadBestFromFile(fileName) : children[0];
@@ -90,7 +96,7 @@ public class SandboxSearch
 
 
                     maxHistory.Add(bestValue);
-                    if (maxHistory.Count > 5)
+                    if (maxHistory.Count > 2)
                     {
                         Console.WriteLine("Restart");
                         break;
@@ -102,13 +108,16 @@ public class SandboxSearch
 
     private static ChildItem[][] GetStartChildren(MapData mapData)
     {
+        var locations = new Dictionary<int, StoreLocationScoring>();
+
         var children = new ChildItem[ChildCount][];
 
         // var hots = mapData.Hotspots.OrderByDescending(h => h.Footfall * h.Spread).ToArray(); // 2735
         //var hots = mapData.Hotspots.OrderByDescending(h => h.Footfall).ToArray(); //2737
         //var hots = mapData.Hotspots.OrderByDescending(h => h.Spread).ToArray(); //2728
         //var hots = mapData.Hotspots.OrderByDescending(h => h.Footfall).ThenBy(x => x.Spread).ToArray(); //2737
-        var hots = mapData.Hotspots.OrderByDescending(h => h.Footfall / h.Spread).ToArray(); //2834
+        //var hots = mapData.Hotspots.OrderByDescending(h => h.Footfall / h.Spread).ToArray(); //3184
+        var hots = mapData.Hotspots.OrderByDescending(h => (h.Footfall * h.Footfall) / h.Spread).ToArray(); //
 
         for (int n = 0; n < ChildCount; n++)
         {
@@ -135,8 +144,8 @@ public class SandboxSearch
             {
                 F3100Count = Rnd.Next(MaxStations + 1),
                 F9100Count = Rnd.Next(MaxStations + 1),
-                Latitude = MoveInLat(hotspot.Latitude, mapData),
-                Longitude = MoveInLon(hotspot.Longitude, mapData),
+                Latitude = MoveInLat(hotspot.Latitude),
+                Longitude = MoveInLon(hotspot.Longitude),
                 LocationType = type
             };
             list.Add(childItem);
@@ -145,22 +154,22 @@ public class SandboxSearch
         return h;
     }
 
-    private static double MoveInLat(double latitude, MapData mapData)
+    private static double MoveInLat(double latitude)
     {
-        if (latitude < mapData.Border.LatitudeMin)
-            return mapData.Border.LatitudeMin;
-        if (latitude > mapData.Border.LatitudeMax)
-            return mapData.Border.LatitudeMax;
+        if (latitude < LatitudeMin)
+            return LatitudeMin;
+        if (latitude > LatitudeMax)
+            return LatitudeMax;
         return latitude;
     }
 
-    private static double MoveInLon(double latitude, MapData mapData)
+    private static double MoveInLon(double longitude)
     {
-        if (latitude < mapData.Border.LongitudeMin)
-            return mapData.Border.LongitudeMin;
-        if (latitude > mapData.Border.LongitudeMax)
-            return mapData.Border.LongitudeMax;
-        return latitude;
+        if (longitude < LongitudeMin)
+            return LongitudeMin;
+        if (longitude > LongitudeMax)
+            return LongitudeMax;
+        return longitude;
     }
 
     private static void Submit(MapData mapData, ChildItem[] best, double localScore)
@@ -227,7 +236,7 @@ public class SandboxSearch
     {
         children[0] = male;
         children[1] = female;
-        for (int i = 2; i < children.Length; i++)
+        for (int i = 1; i < children.Length; i++)
         {
             var split = Rnd.Next(male.Length);
             Array.Copy(male, 0, children[i], 0, split);
@@ -235,13 +244,15 @@ public class SandboxSearch
             for (int m = 0; m < Mutations - 1; m++)
             {
                 var mutation = Rnd.Next(male.Length);
-                var what = Rnd.Next(3);
-                if (what == 0) children[i][mutation].F3100Count = Rnd.Next(3);
-                if (what == 1) children[i][mutation].F9100Count = Rnd.Next(3);
-                if (what == 2)
+                var what = Rnd.Next(2);
+                if (what == 0)
                 {
-                    children[i][mutation].Latitude = RandomLatitude();
-                    children[i][mutation].Longitude = RandomLongitude();
+                    children[i][mutation].F3100Count = Rnd.Next(3);
+                    children[i][mutation].F9100Count = Rnd.Next(3);
+                }else
+                {
+                    children[i][mutation].Latitude = MoveInLat(children[i][mutation].Latitude + RandomLatitude());                    
+                    children[i][mutation].Longitude = MoveInLon(children[i][mutation].Longitude + RandomLongitude());
                 }
             }
         }
@@ -249,12 +260,14 @@ public class SandboxSearch
 
     private static double RandomLongitude()
     {
-        return Rnd.NextDouble() * (LongitudeMax - LongitudeMin) + LongitudeMin;
+        var i = Rnd.Next(0, 1);
+        return LongStep[i];
     }
 
     private static double RandomLatitude()
     {
-        return Rnd.NextDouble() * (LatitudeMax - LatitudeMax) + LatitudeMin;
+        var i = Rnd.Next(0, 1);
+        return LatStep[i];
     }
 
     private static ChildItem[] ReadBestFromFile(string fileName)
