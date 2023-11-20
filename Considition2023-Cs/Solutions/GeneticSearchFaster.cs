@@ -72,13 +72,14 @@ public class GeneticSearchFaster
                         }
                     }
                     maxHistory.Add(bestValue);
-                    if (maxHistory.Count > 3)
+                    if (maxHistory.Count > 5)
                     {
-                        Console.WriteLine("Restart");
+                        var seed = Rnd.Next(ChildCount);
+                        Rnd = new Random(seed);
+                        Console.WriteLine($"Restart with {ChildCount} children. Seed {seed}");
+
                         break;
-                        //var seed = Rnd.Next(1000);
-                        //Console.WriteLine("New Seed: " + seed);
-                        //Rnd = new Random(seed);
+                        
                         //maxHistory.Clear();
                         //maxHistory.Add(bestValue);
                     }
@@ -165,7 +166,7 @@ public class GeneticSearchFaster
     {
         children[0] = male;
         children[1] = female;
-        for (int i = 2; i < children.Length; i++)
+        for (int i = 1; i < children.Length; i++)
         {
             var split = Rnd.Next(male.Length);
             Array.Copy(male, 0, children[i], 0, split);

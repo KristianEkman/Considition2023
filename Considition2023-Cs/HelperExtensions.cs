@@ -44,7 +44,7 @@ namespace Considition2023_Cs
                 case "":
                     return true;
                 case "goteborg":
-                    return score > 6165;
+                    return score > 6160;
                 case "linkoping":
                     return score > 699;
                 case "uppsala":

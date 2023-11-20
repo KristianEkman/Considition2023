@@ -1,7 +1,13 @@
 TODO
 ====
 
+Smartare MakeChildren
+Ej random vid mutation child index, utan ta en i taget.
+
+
 Rampa upp ChildCount vid restarts.
+
+Bättre random funktion.
 
 Fixa nätverkskabel
 
