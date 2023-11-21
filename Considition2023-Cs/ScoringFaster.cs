@@ -10,9 +10,9 @@ namespace Considition2023_Cs
     {
         public static List<string> SandBoxMaps { get; } = new List<string> { "s-sandbox", "g-sandbox" };
 
-        public static double CalculateScore(SubmitSolution solution, MapData mapEntity, GeneralData generalData, bool sandBox = false, bool distCache = true, bool rounding = false)
+        public static double CalculateScore(SubmitSolution solution, MapData mapData, GeneralData generalData, bool sandBox = false, bool distCache = true, bool rounding = false)
         {
-            var Locations = new Dictionary<int, StoreLocationScoring>();
+            var scoreLoc = new Dictionary<int, StoreLocationScoring>();
             var KgCo2Savings = 0d;
             var TotalRevenue = 0d;
             var TotalFreestyle3100Count = 0d;
@@ -25,65 +25,67 @@ namespace Considition2023_Cs
                 //Separate locations on the map into dict for those that have a refill station and those who have not.
                 Dictionary<int, StoreLocationScoring> locationListNoRefillStation = new();
                 //Dictionary<string, StoreLocationScoring> locationListWithRefillStation = new();
-                foreach (KeyValuePair<string, StoreLocation> kvp in mapEntity.locations)
+                foreach (KeyValuePair<string, StoreLocation> kvp in mapData.locations)
                 {
+                    var mapLoc = kvp.Value; 
                     if (solution.Locations.ContainsKey(kvp.Key))
                     {
-                        Locations[kvp.Value.IndexKey] = new()
+                        var solLoc = solution.Locations[kvp.Key];
+                        scoreLoc[mapLoc.IndexKey] = new()
                         {
-                            LocationName = kvp.Value.LocationName,
-                            LocationType = kvp.Value.LocationType,
-                            Latitude = kvp.Value.Latitude,
-                            Longitude = kvp.Value.Longitude,
-                            Footfall = kvp.Value.Footfall,
-                            FootfallScale = kvp.Value.footfallScale,
-                            Freestyle3100Count = solution.Locations[kvp.Key].Freestyle3100Count,
-                            Freestyle9100Count = solution.Locations[kvp.Key].Freestyle9100Count,
+                            LocationName = mapLoc.LocationName,
+                            LocationType = mapLoc.LocationType,
+                            Latitude = mapLoc.Latitude,
+                            Longitude = mapLoc.Longitude,
+                            Footfall = mapLoc.Footfall,
+                            FootfallScale = mapLoc.footfallScale,
+                            Freestyle3100Count = solLoc.Freestyle3100Count,
+                            Freestyle9100Count = solLoc.Freestyle9100Count,
 
-                            SalesVolume = kvp.Value.SalesVolume * generalData.RefillSalesFactor,
+                            SalesVolume = mapLoc.SalesVolume * generalData.RefillSalesFactor,
 
-                            SalesCapacity = solution.Locations[kvp.Key].Freestyle3100Count * generalData.Freestyle3100Data.RefillCapacityPerWeek +
-                                solution.Locations[kvp.Key].Freestyle9100Count * generalData.Freestyle9100Data.RefillCapacityPerWeek,
+                            SalesCapacity = solLoc.Freestyle3100Count * generalData.Freestyle3100Data.RefillCapacityPerWeek +
+                                solLoc.Freestyle9100Count * generalData.Freestyle9100Data.RefillCapacityPerWeek,
 
-                            LeasingCost = solution.Locations[kvp.Key].Freestyle3100Count * generalData.Freestyle3100Data.LeasingCostPerWeek +
-                                solution.Locations[kvp.Key].Freestyle9100Count * generalData.Freestyle9100Data.LeasingCostPerWeek,
-                            IndexKey = kvp.Value.IndexKey
+                            LeasingCost = solLoc.Freestyle3100Count * generalData.Freestyle3100Data.LeasingCostPerWeek +
+                                solLoc.Freestyle9100Count * generalData.Freestyle9100Data.LeasingCostPerWeek,
+                            IndexKey = mapLoc.IndexKey
                         };
 
-                        if (Locations[kvp.Value.IndexKey].SalesCapacity > 0 == false)
+                        if (scoreLoc[mapLoc.IndexKey].SalesCapacity > 0 == false)
                         {
                             return 0;
                         }
                     }
                     else
-                        locationListNoRefillStation[kvp.Value.IndexKey] = new()
+                        locationListNoRefillStation[mapLoc.IndexKey] = new()
                         {
-                            LocationName = kvp.Value.LocationName,
-                            LocationType = kvp.Value.LocationType,
-                            Latitude = kvp.Value.Latitude,
-                            Longitude = kvp.Value.Longitude,
-                            SalesVolume = kvp.Value.SalesVolume * generalData.RefillSalesFactor,
-                            IndexKey = kvp.Value.IndexKey
+                            LocationName = mapLoc.LocationName,
+                            LocationType = mapLoc.LocationType,
+                            Latitude = mapLoc.Latitude,
+                            Longitude = mapLoc.Longitude,
+                            SalesVolume = mapLoc.SalesVolume * generalData.RefillSalesFactor,
+                            IndexKey = mapLoc.IndexKey
                         };
                 }
 
 
                 //Throw an error if no valid locations with a refill station was found
-                if (Locations.Count == 0)
+                if (scoreLoc.Count == 0)
                     return 0;
 
                 //Distribute sales from locations without a refill station to those with.
-                Locations = DistributeSales(Locations, locationListNoRefillStation, generalData, distCache);
+                scoreLoc = DistributeSales(scoreLoc, locationListNoRefillStation, generalData, distCache);
             }
             else
             {
-                Locations = InitiateSandboxLocations(Locations, generalData, solution, distCache);
-                Locations = CalcualteFootfall(Locations, mapEntity, distCache);
+                scoreLoc = InitiateSandboxLocations(scoreLoc, generalData, solution, distCache);
+                scoreLoc = CalcualteFootfall(scoreLoc, mapData, distCache);
             }
 
-            Locations = DivideFootfall(Locations, generalData, distCache);
+            scoreLoc = DivideFootfall(scoreLoc, generalData, distCache);
 
-            foreach (KeyValuePair<int, StoreLocationScoring> kvp in Locations)
+            foreach (KeyValuePair<int, StoreLocationScoring> kvp in scoreLoc)
             {
                 var loc = kvp.Value;
                 if (rounding)
