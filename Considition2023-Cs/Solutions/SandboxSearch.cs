@@ -11,6 +11,7 @@ public class SandboxSearch
     internal static int ChildCount = 500;
     internal static int Mutations = 3;
     internal static bool Rounding = false;
+    internal static int MoveStep = 100;
 
 
     static double LongitudeMax = 0;
@@ -35,8 +36,8 @@ public class SandboxSearch
         LatitudeMax = mapData.Border.LatitudeMax;
         LongitudeMin = mapData.Border.LongitudeMin;
         LatitudeMin = mapData.Border.LatitudeMin;
-        LatStep = [(LatitudeMax - LatitudeMin) / 50, -(LatitudeMax - LatitudeMin) / 50];
-        LongStep = [(LongitudeMax - LongitudeMin) / 50, -(LongitudeMax - LongitudeMin) / 50];
+        LatStep = [(LatitudeMax - LatitudeMin) / MoveStep, -(LatitudeMax - LatitudeMin) / MoveStep];
+        LongStep = [(LongitudeMax - LongitudeMin) / MoveStep, -(LongitudeMax - LongitudeMin) / MoveStep];
 
         var children = GetStartChildren(mapData);
         var fileName = mapData.MapName + ".txt";
@@ -96,11 +97,6 @@ public class SandboxSearch
 
 
                     maxHistory.Add(bestValue);
-                    if (maxHistory.Count > 2)
-                    {
-                        Console.WriteLine("Restart");
-                        break;
-                    }
                 }
             }
         }

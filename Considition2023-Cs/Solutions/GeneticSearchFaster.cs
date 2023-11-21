@@ -174,7 +174,10 @@ public class GeneticSearchFaster
             for (int m = 0; m < Mutations; m++)
             {
                 var mutation = Rnd.Next(male.Length);
-                children[i][mutation] = (Rnd.Next(MaxStations + 1), Rnd.Next(MaxStations + 1));
+                do
+                {
+                    children[i][mutation] = (Rnd.Next(MaxStations + 1), Rnd.Next(MaxStations + 1));
+                } while (children[i][mutation].Item1 > 0 && children[i][mutation].Item2 > 0);
             }
         }
     }
