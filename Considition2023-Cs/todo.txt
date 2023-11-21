@@ -1,5 +1,7 @@
 TODO
 ====
+Räkna ut i förhand vilka platser som ligger inom reseavstånd.
+Kan några platser uteslutas från sökningen? Man kanske kan maximera dem enkelt först eftersom de inte påverkas av nått annat.
 
 Fixa nätverkskabel
 
@@ -47,7 +49,12 @@ Konfigurera om värden ska avrundas.
 Storlek på cache = locations
 
 
-En bra rutin:
+En bra rutin, orginal:
 Börja med Children: 400. Runding false, Mutations 1
 Dubble children när score stannat under 15 rundor.
 Byt till rounding true
+
+En bra rutin, sandbox:
+Mutations 2
+ChildCount 200
+Avbryt efter varje resultat och starta om.

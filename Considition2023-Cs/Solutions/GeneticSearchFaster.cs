@@ -18,18 +18,14 @@ public class GeneticSearchFaster
         var n = 0;
         var bestValue = 0d;
         var fileName = mapData.MapName + ".txt";
+        var names = mapData.locations.Select(x => x.Value.LocationName).ToArray();
+        PrepData(mapData, generalData);
 
         while (true)
         {
             var male = File.Exists(fileName) ? ReadBestFromFile(fileName) : RandomArray(size);
             var female = RandomArray(size);
-            var children = new (int, int)[ChildCount][];
-            var names = mapData.locations.Select(x => x.Value.LocationName).ToArray();
-            var k = 0;
-            foreach (var loc in mapData.locations)
-                loc.Value.IndexKey = k++;
-            foreach (var hs in mapData.Hotspots)
-                hs.IndexKey = k++;
+            var children = new (int, int)[ChildCount][];            
 
             for (int i = 0; i < ChildCount; i++)
             {
@@ -67,7 +63,7 @@ public class GeneticSearchFaster
                         maxHistory.Clear();
                         if (periodicSubmit)
                         {
-                            Submit(mapData, names, best.Clone() as (int, int)[], bestValue);                            
+                            Submit(mapData, names, best.Clone() as (int, int)[], bestValue);
                             File.WriteAllText(mapData.MapName + ".txt", string.Join(";", best));
                         }
                     }
@@ -79,10 +75,34 @@ public class GeneticSearchFaster
                         Console.WriteLine($"Restart with {ChildCount} children. Seed {seed}");
 
                         break;
-                        
+
                         //maxHistory.Clear();
                         //maxHistory.Add(bestValue);
                     }
+                }
+            }
+        }
+    }
+
+    private static void PrepData(MapData mapData, GeneralData generalData)
+    {
+        var k = 0;
+        foreach (var loc in mapData.locations)
+            loc.Value.IndexKey = k++;
+        foreach (var hs in mapData.Hotspots)
+            hs.IndexKey = k++;
+
+        foreach (var loc in mapData.locations)
+        {
+            loc.Value.SalesVolume = loc.Value.SalesVolume * generalData.RefillSalesFactor;
+            foreach (var loc2 in mapData.locations)
+            {
+                if (loc.Value == loc2.Value)
+                    continue;
+
+                if (loc.Value.DistanceBetweenPoint(loc2.Value) < generalData.WillingnessToTravelInMeters)
+                {
+                    loc.Value.Neighbours.Add(loc2.Value);
                 }
             }
         }
@@ -117,9 +137,10 @@ public class GeneticSearchFaster
         }
 
         SolutionBase.SubmitSolutionAsync(mapData, localScore, solution);
-    }    
+    }
 
-    private static (int, double) [] Evaluate((int, int)[][] children, MapData mapData, GeneralData generalData) {
+    private static (int, double)[] Evaluate((int, int)[][] children, MapData mapData, GeneralData generalData)
+    {
         var topList = new List<(int, double)>();
         var names = mapData.locations.Select(x => x.Value.LocationName).ToArray();
 
@@ -140,7 +161,7 @@ public class GeneticSearchFaster
                     }
                 }
 
-                var score = ScoringFaster.CalculateScore(solution, mapData, generalData, false, true, Rounding);                
+                var score = ScoringFaster.CalculateScore(solution, mapData, generalData, false, true, Rounding);
                 lock (topList)
                 {
                     topList.Add((i, score));
@@ -174,10 +195,7 @@ public class GeneticSearchFaster
             for (int m = 0; m < Mutations; m++)
             {
                 var mutation = Rnd.Next(male.Length);
-                do
-                {
-                    children[i][mutation] = (Rnd.Next(MaxStations + 1), Rnd.Next(MaxStations + 1));
-                } while (children[i][mutation].Item1 > 0 && children[i][mutation].Item2 > 0);
+                children[i][mutation] = (Rnd.Next(MaxStations + 1), Rnd.Next(MaxStations + 1));
             }
         }
     }

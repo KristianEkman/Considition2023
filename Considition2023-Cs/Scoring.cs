@@ -42,7 +42,7 @@ namespace Considition2023_Cs
                             Freestyle3100Count = solution.Locations[kvp.Key].Freestyle3100Count,
                             Freestyle9100Count = solution.Locations[kvp.Key].Freestyle9100Count,
 
-                            SalesVolume = kvp.Value.SalesVolume * generalData.RefillSalesFactor,
+                            SalesVolume = kvp.Value.SalesVolume,
 
                             SalesCapacity = solution.Locations[kvp.Key].Freestyle3100Count * generalData.Freestyle3100Data.RefillCapacityPerWeek +
                                 solution.Locations[kvp.Key].Freestyle9100Count * generalData.Freestyle9100Data.RefillCapacityPerWeek,
@@ -65,7 +65,7 @@ namespace Considition2023_Cs
                             LocationType = kvp.Value.LocationType,
                             Latitude = kvp.Value.Latitude,
                             Longitude = kvp.Value.Longitude,
-                            SalesVolume = kvp.Value.SalesVolume * generalData.RefillSalesFactor,
+                            SalesVolume = kvp.Value.SalesVolume,
                             IndexKey = kvp.Value.IndexKey
                         };
                 }

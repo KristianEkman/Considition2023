@@ -42,7 +42,7 @@ namespace Considition2023_Cs
                             Freestyle3100Count = solLoc.Freestyle3100Count,
                             Freestyle9100Count = solLoc.Freestyle9100Count,
 
-                            SalesVolume = mapLoc.SalesVolume * generalData.RefillSalesFactor,
+                            SalesVolume = mapLoc.SalesVolume,
 
                             SalesCapacity = solLoc.Freestyle3100Count * generalData.Freestyle3100Data.RefillCapacityPerWeek +
                                 solLoc.Freestyle9100Count * generalData.Freestyle9100Data.RefillCapacityPerWeek,
@@ -64,7 +64,7 @@ namespace Considition2023_Cs
                             LocationType = mapLoc.LocationType,
                             Latitude = mapLoc.Latitude,
                             Longitude = mapLoc.Longitude,
-                            SalesVolume = mapLoc.SalesVolume * generalData.RefillSalesFactor,
+                            SalesVolume = mapLoc.SalesVolume,
                             IndexKey = mapLoc.IndexKey
                         };
                 }
