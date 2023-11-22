@@ -1,5 +1,6 @@
 using Considition2023_Cs;
 using Considition2023_Cs.Solutions;
+using Newtonsoft.Json;
 
 public class GeneticSearch
 {
@@ -73,7 +74,7 @@ public class GeneticSearch
                     if (periodicSubmit)
                     {
                         Submit(mapData, names, best.Clone() as (int, int)[], bestValue);
-                        File.WriteAllText(mapData.MapName + ".txt", string.Join(";", best));
+                        File.WriteAllText(mapData.MapName + ".txt", JsonConvert.SerializeObject(best));
                     }
                 }
                 maxHistory.Add(bestValue);
