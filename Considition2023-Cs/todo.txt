@@ -1,8 +1,7 @@
 TODO
 ====
-
-Kortare mutation % av längd, glidande start
-Spara mapData och GeneralData lokalt
+Utesluta vissa mutationer om de aldrig används?
+1,1		2,2		2,1		osv
 
 Fixa nätverkskabel
 
@@ -49,7 +48,7 @@ Konfigurera om värden ska avrundas.
 Storlek på cache = locations
 HotSpots
 Found score after. Spara tiden.
-
+Spara mapData och GeneralData lokalt
 
 En bra rutin:
 Börja med Children: 400. Runding false, Mutations 1

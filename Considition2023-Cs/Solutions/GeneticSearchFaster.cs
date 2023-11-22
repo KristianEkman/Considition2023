@@ -93,7 +93,7 @@ public class GeneticSearchFaster
                         var seed = Rnd.Next(ChildCount);
                         Rnd = new Random(seed);
                         Console.WriteLine($"Restart with {ChildCount} children. Seed {seed}");
-                        break;                        
+                        break;
                     }
                 }
             }
@@ -102,10 +102,11 @@ public class GeneticSearchFaster
 
     private static void SaveFiles(string name, double bestValue, (int, int)[] best)
     {
-        var data = string.Join(";", best);        
+        var data = string.Join(";", best);
         File.WriteAllText($"{name}.txt", data);
         var scoreText = bestValue.ToString("0.##").Replace(",", ".");
-        File.WriteAllText($"{name}\\{name}.{scoreText}.txt", data);
+        var path = Path.Combine(name, name + $"{scoreText}.txt");
+        File.WriteAllText(path, data);
     }
 
     private static void StoreHotSpots(string mapName)
@@ -133,7 +134,7 @@ public class GeneticSearchFaster
 
     private static (int, int)[] ReadBestFromFile(string fileName)
     {
-        Console.WriteLine("Reading " + fileName);        
+        Console.WriteLine("Reading " + fileName);
         var items = File.ReadAllText(fileName).Split(";");
         var list = new List<(int, int)>();
         foreach (var item in items)
@@ -160,9 +161,10 @@ public class GeneticSearchFaster
         }
 
         SolutionBase.SubmitSolutionAsync(mapData, localScore, solution);
-    }    
+    }
 
-    private static (int, double) [] Evaluate((int, int)[][] children, MapData mapData, GeneralData generalData) {
+    private static (int, double)[] Evaluate((int, int)[][] children, MapData mapData, GeneralData generalData)
+    {
         var topList = new List<(int, double)>();
         var names = mapData.locations.Select(x => x.Value.LocationName).ToArray();
 
@@ -183,7 +185,7 @@ public class GeneticSearchFaster
                     }
                 }
 
-                var score = ScoringFaster.CalculateScore(solution, mapData, generalData, false, true, Rounding);                
+                var score = ScoringFaster.CalculateScore(solution, mapData, generalData, false, true, Rounding);
                 lock (topList)
                 {
                     topList.Add((i, score));
@@ -206,21 +208,21 @@ public class GeneticSearchFaster
     }
 
     //Why no 1,1?
-    private static (int, int)[] GoodMutations = [(0 ,0),(0, 1), (1, 0),(1, 1), (2, 0), (0, 2)];
+    private static (int, int)[] GoodMutations = [(0, 0), (0, 1), (1, 0), (1, 1), (2, 0), (0, 2)];
     private static void MakeChildren((int, int)[][] children, (int, int)[] male, (int, int)[] female)
     {
         children[0] = male;
         children[1] = female;
         for (int i = 1; i < children.Length; i++)
         {
-            var split = Rnd.Next(male.Length); //(i - 1) % male.Length; Intressant att ett slumptal här ger mycket bättre inlärning än glidande start.
+            var split = Rnd.Next(male.Length); //(i - 1) % male.Length; Intressant att ett slumptal hï¿½r ger mycket bï¿½ttre inlï¿½rning ï¿½n glidande start.
             var length = female.Length - split; // Math.Min((int)(male.Length * 0.25d), female.Length - split);
             Array.Copy(male, 0, children[i], 0, split);
             Array.Copy(female, split, children[i], split, length);
             for (int m = 0; m < Mutations; m++)
             {
                 var mutation = Rnd.Next(male.Length);
-                var v1 = GoodMutations[Rnd.Next(GoodMutations.Length)];                
+                var v1 = GoodMutations[Rnd.Next(GoodMutations.Length)];
                 children[i][mutation] = v1;
             }
         }
@@ -231,15 +233,15 @@ public class GeneticSearchFaster
         children[0] = male;
         children[1] = female;
         for (int i = 1; i < children.Length; i++)
-        {            
-            Array.Copy(male, 0, children[i], 0, male.Length);            
+        {
+            Array.Copy(male, 0, children[i], 0, male.Length);
             for (int m = 0; m < Mutations; m++)
             {
                 var mutation = HotSpots[Rnd.Next(HotSpots.Length)];
                 do
                 {
                     children[i][mutation] = (Rnd.Next(MaxStations + 1), Rnd.Next(MaxStations + 1));
-                } while (children[i][mutation].Item1 > 0 && children[i][mutation].Item2 > 0);                
+                } while (children[i][mutation].Item1 > 0 && children[i][mutation].Item2 > 0);
             }
         }
     }

@@ -15,6 +15,13 @@ internal class Api
 
     public async Task<MapData> GetMapDataAsync(string mapName, string apiKey)
     {
+        var fileName = $"{mapName}.mapdata.json";
+        if (File.Exists(fileName))
+        {
+            var fileContent = File.ReadAllText(fileName);
+            return JsonConvert.DeserializeObject<MapData>(fileContent);
+        }
+
         HttpRequestMessage request = new();
         request.Method = HttpMethod.Get;
         request.RequestUri = new Uri($"/api/game/getmapdata?mapName={Uri.EscapeDataString(mapName)}", UriKind.Relative);
@@ -22,14 +29,22 @@ internal class Api
         HttpResponseMessage response = await _httpClient.SendAsync(request);
         response.EnsureSuccessStatusCode();
         string responseText = await response.Content.ReadAsStringAsync();
+        File.WriteAllText(fileName, responseText);
         return JsonConvert.DeserializeObject<MapData>(responseText);
     }
 
     public async Task<GeneralData> GetGeneralDataAsync()
     {
+        var fileName = $"general.data.json";
+        if (File.Exists(fileName))
+        {
+            var fileContent = File.ReadAllText(fileName);
+            return JsonConvert.DeserializeObject<GeneralData>(fileContent);
+        }
         var response = await _httpClient.GetAsync("/api/game/getgeneralgamedata");
         response.EnsureSuccessStatusCode();
         string responseText = await response.Content.ReadAsStringAsync();
+        File.WriteAllText(fileName, responseText);
         var data = JsonConvert.DeserializeObject<GeneralData>(responseText);
         HelperExtensions.LocationTypes = data.LocationTypes.ToArray();
         return data;
@@ -59,4 +74,4 @@ internal class Api
         response.EnsureSuccessStatusCode();
         return JsonConvert.DeserializeObject<GameData>(responseText);
     }
-}   
+}
