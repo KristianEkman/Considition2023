@@ -206,7 +206,7 @@ public class GeneticSearchFaster
     }
 
     //Why no 1,1?
-    private static (int, int)[] GoodMutations = [(0 ,0),(0, 1), (1, 0), (2, 0), (0, 2)];
+    private static (int, int)[] GoodMutations = [(0 ,0),(0, 1), (1, 0),(1, 1), (2, 0), (0, 2)];
     private static void MakeChildren((int, int)[][] children, (int, int)[] male, (int, int)[] female)
     {
         children[0] = male;
