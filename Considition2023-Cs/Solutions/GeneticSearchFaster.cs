@@ -142,6 +142,10 @@ public class GeneticSearchFaster
             var vals = item.Replace("(", "").Replace(")", "").Split(",");
             list.Add((int.Parse(vals[0].Trim()), int.Parse(vals[1].Trim())));
         }
+
+        var mutationKind = list.Distinct().OrderBy(x => x.Item1).ThenBy(x => x.Item2);
+        Console.WriteLine(string.Join(",", mutationKind));
+        GoodMutations = mutationKind.ToArray();
         return list.ToArray();
     }
 
@@ -171,6 +175,7 @@ public class GeneticSearchFaster
         //for (int i = 0;i < children.Length;i++)
         Parallel.For(0, children.Length, (int i) =>
             {
+                //Thread.CurrentThread.Priority = ThreadPriority.Highest;
                 SubmitSolution solution = new();
                 var child = children[i];
                 for (var j = 0; j < children[i].Length; j++)
@@ -202,13 +207,12 @@ public class GeneticSearchFaster
         (int, int)[] a = new (int, int)[size];
         for (int i = 0; i < size; i++)
         {
-            a[i] = (Rnd.Next(MaxStations + 1), Rnd.Next(MaxStations + 1));
+            a[i] = GoodMutations[Rnd.Next(GoodMutations.Length)];
         }
         return a;
     }
 
-    //Why no 1,1?
-    private static (int, int)[] GoodMutations = [(0, 0), (0, 1), (1, 0), (1, 1), (2, 0), (0, 2)];
+    private static (int, int)[] GoodMutations = [(0, 0), (0, 1), (1, 0), (1, 1), (2, 0), (0, 2), (2, 1), (1, 2), (2, 2)];
     private static void MakeChildren((int, int)[][] children, (int, int)[] male, (int, int)[] female)
     {
         children[0] = male;
