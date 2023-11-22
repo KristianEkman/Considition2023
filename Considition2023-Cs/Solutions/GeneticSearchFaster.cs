@@ -11,6 +11,7 @@ public class GeneticSearchFaster
     internal static bool Rounding = false;
     internal static bool UseHotSpots = false;
     internal static int[] HotSpots;
+    internal static DateTime StartTime = DateTime.Now;
 
     public static void Run(MapData mapData, GeneralData generalData, bool periodicSubmit)
     {
@@ -73,8 +74,9 @@ public class GeneticSearchFaster
                 if (n % 100 == 0)
                 {
                     var speed = ((100 * ChildCount) / (double)stopWatch.ElapsedMilliseconds).ToString("0.##");
+                    var duration = (DateTime.Now - StartTime).TotalSeconds.ToString("0.#");
                     stopWatch.Restart();
-                    Console.WriteLine($"{n}. {bestValue.ToString("0.##")} pt\t{speed} evs/ms");
+                    Console.WriteLine($"{n}. {bestValue:0.##}pt after {duration}s\t{speed} evs/ms");
                     var betterThanPreviousBest = bestValue > maxHistory.LastOrDefault();
                     if (betterThanPreviousBest)
                     {
@@ -131,7 +133,7 @@ public class GeneticSearchFaster
 
     private static (int, int)[] ReadBestFromFile(string fileName)
     {
-        Console.WriteLine("Reading " + fileName);
+        Console.WriteLine("Reading " + fileName);        
         var items = File.ReadAllText(fileName).Split(";");
         var list = new List<(int, int)>();
         foreach (var item in items)
@@ -203,22 +205,23 @@ public class GeneticSearchFaster
         return a;
     }
 
+    //Why no 1,1?
+    private static (int, int)[] GoodMutations = [(0 ,0),(0, 1), (1, 0), (2, 0), (0, 2)];
     private static void MakeChildren((int, int)[][] children, (int, int)[] male, (int, int)[] female)
     {
         children[0] = male;
         children[1] = female;
         for (int i = 1; i < children.Length; i++)
         {
-            var split = Rnd.Next(male.Length);
+            var split = Rnd.Next(male.Length); //(i - 1) % male.Length; Intressant att ett slumptal här ger mycket bättre inlärning än glidande start.
+            var length = female.Length - split; // Math.Min((int)(male.Length * 0.25d), female.Length - split);
             Array.Copy(male, 0, children[i], 0, split);
-            Array.Copy(female, split, children[i], split, female.Length - split);
+            Array.Copy(female, split, children[i], split, length);
             for (int m = 0; m < Mutations; m++)
             {
                 var mutation = Rnd.Next(male.Length);
-                do
-                {
-                    children[i][mutation] = (Rnd.Next(MaxStations + 1), Rnd.Next(MaxStations + 1));
-                } while (children[i][mutation].Item1 > 0 && children[i][mutation].Item2 > 0);                
+                var v1 = GoodMutations[Rnd.Next(GoodMutations.Length)];                
+                children[i][mutation] = v1;
             }
         }
     }

@@ -2,9 +2,9 @@ TODO
 ====
 
 Kortare mutation % av längd, glidande start
+Spara mapData och GeneralData lokalt
+
 Fixa nätverkskabel
-Rampa upp ChildCount vid restarts.
-Found score after. Spara tiden.
 
 Sandbox
 * Söka fram bästa position innan Station Count
@@ -48,6 +48,7 @@ Visa prestanda på sandbox
 Konfigurera om värden ska avrundas.
 Storlek på cache = locations
 HotSpots
+Found score after. Spara tiden.
 
 
 En bra rutin:
