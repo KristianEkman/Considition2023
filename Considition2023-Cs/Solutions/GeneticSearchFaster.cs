@@ -9,15 +9,26 @@ public class GeneticSearchFaster
     internal static int ChildCount = 500;
     internal static int Mutations = 2;
     internal static bool Rounding = false;
+    internal static bool UseHotSpots = false;
+    internal static int[] HotSpots;
 
     public static void Run(MapData mapData, GeneralData generalData, bool periodicSubmit)
     {
+        var mapName = mapData.MapName;
         var size = mapData.locations.Count;
-        Console.WriteLine($"{mapData.MapName} has {size} locations");
+        Console.WriteLine($"{mapName} has {size} locations");
         DistanceCache.Reset(size);
+
+        var dir = new DirectoryInfo(mapName);
+        if (!dir.Exists)
+            dir.Create();
+
+        if (UseHotSpots)
+            StoreHotSpots(mapName);
+
         var n = 0;
         var bestValue = 0d;
-        var fileName = mapData.MapName + ".txt";
+        var fileName = mapName + ".txt";
 
         while (true)
         {
@@ -44,7 +55,10 @@ public class GeneticSearchFaster
             while (true)
             {
                 n++;
-                MakeChildren(children, male, female);
+                if (UseHotSpots)
+                    MakeChildrenOfHotspots(children, male, female);
+                else
+                    MakeChildren(children, male, female);
                 twoBest = Evaluate(children, mapData, generalData);
                 male = children[twoBest[0].Index];
                 female = children[twoBest[1].Index];
@@ -67,8 +81,8 @@ public class GeneticSearchFaster
                         maxHistory.Clear();
                         if (periodicSubmit)
                         {
-                            Submit(mapData, names, best.Clone() as (int, int)[], bestValue);                            
-                            File.WriteAllText(mapData.MapName + ".txt", string.Join(";", best));
+                            SaveFiles(mapName, bestValue, best);
+                            Submit(mapData, names, best.Clone() as (int, int)[], bestValue);
                         }
                     }
                     maxHistory.Add(bestValue);
@@ -77,20 +91,47 @@ public class GeneticSearchFaster
                         var seed = Rnd.Next(ChildCount);
                         Rnd = new Random(seed);
                         Console.WriteLine($"Restart with {ChildCount} children. Seed {seed}");
-
-                        break;
-                        
-                        //maxHistory.Clear();
-                        //maxHistory.Add(bestValue);
+                        break;                        
                     }
                 }
             }
         }
     }
 
+    private static void SaveFiles(string name, double bestValue, (int, int)[] best)
+    {
+        var data = string.Join(";", best);        
+        File.WriteAllText($"{name}.txt", data);
+        var scoreText = bestValue.ToString("0.##").Replace(",", ".");
+        File.WriteAllText($"{name}\\{name}.{scoreText}.txt", data);
+    }
+
+    private static void StoreHotSpots(string mapName)
+    {
+        var files = Directory.GetFiles(mapName);
+        var datas = new List<(int, int)[]>();
+        foreach (var file in files)
+        {
+            datas.Add(ReadBestFromFile(file));
+        }
+        var list = new List<int>();
+        var n = 0;
+        do
+        {
+            for (int i = 0; i < datas.Count - 1; i++)
+            {
+                if (datas[i][n].Item1 != datas[i + 1][n].Item1 || datas[i][n].Item2 != datas[i + 1][n].Item2)
+                    list.Add(n);
+            }
+            n++;
+        } while (n < datas[0].Length);
+        HotSpots = list.Distinct().ToArray();
+        Console.WriteLine("Hotspots: " + HotSpots.Length);
+    }
+
     private static (int, int)[] ReadBestFromFile(string fileName)
     {
-        Console.WriteLine("Reading" + fileName);
+        Console.WriteLine("Reading " + fileName);
         var items = File.ReadAllText(fileName).Split(";");
         var list = new List<(int, int)>();
         foreach (var item in items)
@@ -177,7 +218,25 @@ public class GeneticSearchFaster
                 do
                 {
                     children[i][mutation] = (Rnd.Next(MaxStations + 1), Rnd.Next(MaxStations + 1));
-                } while (children[i][mutation].Item1 > 0 && children[i][mutation].Item2 > 0);
+                } while (children[i][mutation].Item1 > 0 && children[i][mutation].Item2 > 0);                
+            }
+        }
+    }
+
+    private static void MakeChildrenOfHotspots((int, int)[][] children, (int, int)[] male, (int, int)[] female)
+    {
+        children[0] = male;
+        children[1] = female;
+        for (int i = 1; i < children.Length; i++)
+        {            
+            Array.Copy(male, 0, children[i], 0, male.Length);            
+            for (int m = 0; m < Mutations; m++)
+            {
+                var mutation = HotSpots[Rnd.Next(HotSpots.Length)];
+                do
+                {
+                    children[i][mutation] = (Rnd.Next(MaxStations + 1), Rnd.Next(MaxStations + 1));
+                } while (children[i][mutation].Item1 > 0 && children[i][mutation].Item2 > 0);                
             }
         }
     }

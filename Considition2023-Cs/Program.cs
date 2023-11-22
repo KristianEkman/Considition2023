@@ -48,13 +48,17 @@ void Parse(string[] args)
                 break;
             case "Rounding":
                 GeneticSearch.Rounding = split[1] == "true";
-                GeneticSearchFaster.Rounding = split[1] == "true"; ;
-                SandboxSearch.Rounding = split[1] == "true"; ;
+                GeneticSearchFaster.Rounding = split[1] == "true";
+                SandboxSearch.Rounding = split[1] == "true";
                 Console.WriteLine($"Rounding={split[1]}");
                 break;
             case "Map":
                 Console.WriteLine($"Map={split[1]}");
                 mapName = split[1];
+                break;
+            case "HotSpots":
+                Console.WriteLine($"HotSpots={split[1]}");
+                GeneticSearchFaster.UseHotSpots = split[1] == "true"; ;
                 break;
         }
     }

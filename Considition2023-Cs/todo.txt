@@ -1,13 +1,15 @@
 TODO
 ====
 
+Kortare mutation % av längd, glidande start
 Fixa nätverkskabel
-
 Rampa upp ChildCount vid restarts.
+Found score after. Spara tiden.
 
 Sandbox
 * Söka fram bästa position innan Station Count
-* fundera på bättre sortering, spread och footfall
+* fundera på bättre sortering, spread och 
+* Parameter för movestep
 
 Optimera scoring-funktionen
 
@@ -45,6 +47,7 @@ Visa prestanda på sandbox
 .net 8
 Konfigurera om värden ska avrundas.
 Storlek på cache = locations
+HotSpots
 
 
 En bra rutin:
