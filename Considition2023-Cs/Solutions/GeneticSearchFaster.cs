@@ -88,7 +88,7 @@ public class GeneticSearchFaster
                         }
                     }
                     maxHistory.Add(bestValue);
-                    if (maxHistory.Count > 5)
+                    if (maxHistory.Count > 2)
                     {
                         var seed = Rnd.Next(ChildCount);
                         Rnd = new Random(seed);
