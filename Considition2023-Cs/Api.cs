@@ -39,7 +39,9 @@ internal class Api
         if (File.Exists(fileName))
         {
             var fileContent = File.ReadAllText(fileName);
-            return JsonConvert.DeserializeObject<GeneralData>(fileContent);
+            var gdata = JsonConvert.DeserializeObject<GeneralData>(fileContent);
+            HelperExtensions.LocationTypes = gdata.LocationTypes.ToArray();
+            return gdata;
         }
         var response = await _httpClient.GetAsync("/api/game/getgeneralgamedata");
         response.EnsureSuccessStatusCode();
