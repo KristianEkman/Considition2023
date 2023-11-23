@@ -63,6 +63,7 @@ public class SandboxSearch
         {
             var maxHistory = new List<double>() { bestValue };
             children = GetStartChildren(mapData);
+            female = children[1];
             while (true)
             {
                 n++;
@@ -97,6 +98,13 @@ public class SandboxSearch
 
 
                     maxHistory.Add(bestValue);
+                    if (maxHistory.Count > 2)
+                    {
+                        var seed = Rnd.Next(ChildCount);
+                        Rnd = new Random(seed);
+                        Console.WriteLine($"Restart with {ChildCount} children. Seed {seed}");
+                        break;
+                    }
                 }
             }
         }
@@ -135,7 +143,7 @@ public class SandboxSearch
     {
         for (int i = 0; i < max; i++)
         {
-            var hotspot = hots[h++];
+            var hotspot = hots[Rnd.Next(hots.Length)];
             var childItem = new ChildItem
             {
                 F3100Count = Rnd.Next(MaxStations + 1),
@@ -240,7 +248,7 @@ public class SandboxSearch
             for (int m = 0; m < Mutations - 1; m++)
             {
                 var mutation = Rnd.Next(male.Length);
-                var what = Rnd.Next(2);
+                var what = 0;// Rnd.Next(2);
                 if (what == 0)
                 {
                     children[i][mutation].F3100Count = Rnd.Next(3);
@@ -257,13 +265,13 @@ public class SandboxSearch
     private static double RandomLongitude()
     {
         var i = Rnd.Next(0, 1);
-        return LongStep[i];
+        return LongStep[i] * Rnd.NextDouble();
     }
 
     private static double RandomLatitude()
     {
         var i = Rnd.Next(0, 1);
-        return LatStep[i];
+        return LatStep[i] * Rnd.NextDouble();
     }
 
     private static ChildItem[] ReadBestFromFile(string fileName)
