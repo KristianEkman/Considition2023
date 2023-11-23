@@ -145,7 +145,7 @@ public class GeneticSearchFaster
 
         var mutationKind = list.Distinct().OrderBy(x => x.Item1).ThenBy(x => x.Item2);
         Console.WriteLine(string.Join(",", mutationKind));
-        GoodMutations = mutationKind.ToArray();
+        //GoodMutations = mutationKind.ToArray();
         return list.ToArray();
     }
 
@@ -212,7 +212,7 @@ public class GeneticSearchFaster
         return a;
     }
 
-    private static (int, int)[] GoodMutations = [(0, 0), (0, 1), (1, 0), (1, 1), (2, 0), (0, 2), (2, 1), (1, 2), (2, 2)];
+    private static (int, int)[] GoodMutations = [(0, 0), (0, 1), (1, 0), (2, 0), (0, 2)];
     private static void MakeChildren((int, int)[][] children, (int, int)[] male, (int, int)[] female)
     {
         children[0] = male;
