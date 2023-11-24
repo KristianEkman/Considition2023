@@ -37,25 +37,5 @@ namespace Considition2023_Cs
 
         public static KeyValuePair<string, LocationType>[] LocationTypes { get; set; }
 
-        public static bool IsToGood(this double score , string mapName)
-        {
-            switch (mapName)
-            {
-                case "":
-                    return true;
-                case "goteborg":
-                    return score > 6160;
-                case "linkoping":
-                    return score > 699;
-                case "uppsala":
-                    return score > 2417;
-                case "vasteras":
-                    return score > 1498;
-                case "g-sandbox":
-                    return score > 4000;
-            }
-            return false;
-        }
-
     }
 }
