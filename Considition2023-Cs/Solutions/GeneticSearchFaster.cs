@@ -29,7 +29,7 @@ public class GeneticSearchFaster
 
         var n = 0;
         var bestValue = 0d;
-        var fileName = mapName + ".txt";
+        var fileName = Path.Combine("saved", mapName + ".txt");
 
         while (true)
         {
@@ -112,7 +112,7 @@ public class GeneticSearchFaster
 
     private static void StoreHotSpots(string mapName)
     {
-        var files = Directory.GetFiles(mapName);
+        var files = Directory.GetFiles(Path.Combine("saved", mapName));
         var datas = new List<(int, int)[]>();
         foreach (var file in files)
         {

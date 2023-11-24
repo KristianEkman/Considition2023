@@ -13,7 +13,7 @@ public class GeneticSearch
     {
         var size = mapData.locations.Count;
         var fileName = mapData.MapName + ".txt";
-        var male = File.Exists(fileName) ? ReadBestFromFile(fileName) : RandomArray(size);
+        var male = File.Exists(Path.Combine("saved", fileName)) ? ReadBestFromFile(fileName) : RandomArray(size);
         var female = RandomArray(size);
         var children = new (int, int)[ChildCount][];
         var names = mapData.locations.Select(x => x.Value.LocationName).ToArray();
@@ -91,7 +91,7 @@ public class GeneticSearch
 
     private static (int, int)[] ReadBestFromFile(string fileName)
     {
-        var items = File.ReadAllText(fileName).Split(";");
+        var items = fileName.ReadFileText().Split(";");
         var list = new List<(int, int)>();
         foreach (var item in items)
         {

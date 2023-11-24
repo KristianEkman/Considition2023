@@ -277,6 +277,6 @@ public class SandboxSearch
     private static ChildItem[] ReadBestFromFile(string fileName)
     {
         Console.WriteLine("Read " + fileName);
-        return JsonConvert.DeserializeObject<ChildItem[]>(File.ReadAllText(fileName));
+        return JsonConvert.DeserializeObject<ChildItem[]>(fileName.ReadFileText());
     }
 }
