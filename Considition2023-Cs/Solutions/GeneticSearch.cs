@@ -5,7 +5,7 @@ public class GeneticSearch
 {
     static Random Rnd = new(777);
     internal static int MaxStations = 2;
-    internal static int ChildCount = 400;    
+    internal static int ChildCount = 400;
     internal static int Mutations = 3;
     internal static bool Rounding = false;
 
@@ -13,14 +13,14 @@ public class GeneticSearch
     {
         var size = mapData.locations.Count;
         var fileName = mapData.MapName + ".txt";
-        var male =  File.Exists(fileName) ? ReadBestFromFile(fileName) : RandomArray(size);
+        var male = File.Exists(fileName) ? ReadBestFromFile(fileName) : RandomArray(size);
         var female = RandomArray(size);
         var children = new (int, int)[ChildCount][];
         var names = mapData.locations.Select(x => x.Value.LocationName).ToArray();
         DistanceCache.Reset(size);
         var k = 0;
         foreach (var loc in mapData.locations)
-            loc.Value.IndexKey = k++;        
+            loc.Value.IndexKey = k++;
         foreach (var hs in mapData.Hotspots)
             hs.IndexKey = k++;
 
@@ -72,8 +72,8 @@ public class GeneticSearch
                     maxHistory.Clear();
                     if (periodicSubmit)
                     {
+                        string.Join(";", best).SaveTo(mapData.MapName + ".txt");
                         Submit(mapData, names, best.Clone() as (int, int)[], bestValue);
-                        File.WriteAllText(mapData.MapName + ".txt", string.Join(";", best));
                     }
                 }
                 maxHistory.Add(bestValue);
@@ -117,7 +117,7 @@ public class GeneticSearch
         }
 
         SolutionBase.SubmitSolutionAsync(mapData, localScore, solution);
-    }    
+    }
 
     private static (int Index, double Total, double Earnings, double KgCo2Savings, double v)[] Evaluate(
         (int, int)[][] children, MapData mapData, GeneralData generalData, Func<Score, double> optimizeFor, bool optimizeLow)

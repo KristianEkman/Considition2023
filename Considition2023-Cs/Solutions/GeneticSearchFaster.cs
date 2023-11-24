@@ -20,7 +20,7 @@ public class GeneticSearchFaster
         Console.WriteLine($"{mapName} has {size} locations");
         DistanceCache.Reset(size);
 
-        var dir = new DirectoryInfo(mapName);
+        var dir = new DirectoryInfo(Path.Combine("saved", mapName));
         if (!dir.Exists)
             dir.Create();
 
@@ -103,10 +103,11 @@ public class GeneticSearchFaster
     private static void SaveFiles(string name, double bestValue, (int, int)[] best)
     {
         var data = string.Join(";", best);
-        File.WriteAllText($"{name}.txt", data);
+        data.SaveTo($"{name}.txt");
+
         var scoreText = bestValue.ToString("0.##").Replace(",", ".");
         var path = Path.Combine(name, name + $"{scoreText}.txt");
-        File.WriteAllText(path, data);
+        data.SaveTo(path);
     }
 
     private static void StoreHotSpots(string mapName)

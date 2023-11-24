@@ -9,7 +9,8 @@ namespace Considition2023_Cs
 {
     internal static class HelperExtensions
     {
-        public static void PrintJson(this object obj) { 
+        public static void PrintJson(this object obj)
+        {
             Console.WriteLine(JsonConvert.SerializeObject(obj, Formatting.Indented));
         }
 
@@ -31,11 +32,25 @@ namespace Considition2023_Cs
             }
 
             return scaled.ToString(format) + prefix;
-        }        
+        }
 
         public static string Apikey = "20d51f18-3a6f-4419-8466-1fac81f7e540";
 
         public static KeyValuePair<string, LocationType>[] LocationTypes { get; set; }
 
+        public static void SaveTo(this string fileText, string filename)
+        {
+            if (!Directory.Exists("saved"))
+                Directory.CreateDirectory("saved");
+            File.WriteAllText(Path.Combine("saved", filename), fileText);
+        }
+
+        public static string ReadFileText(this string filename)
+        {
+            var path = Path.Combine("saved", filename);
+            if (File.Exists(path))
+                return File.ReadAllText(path);
+            return string.Empty;
+        }
     }
 }

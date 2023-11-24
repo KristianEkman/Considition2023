@@ -42,7 +42,7 @@ public class SandboxSearch
         var children = GetStartChildren(mapData);
         var fileName = mapData.MapName + ".txt";
         var male = File.Exists(fileName) ? ReadBestFromFile(fileName) : children[0];
-        
+
         var female = children[1];
         var size = male.Length;
 
@@ -91,11 +91,10 @@ public class SandboxSearch
                         maxHistory.Clear();
                         if (periodicSubmit)
                         {
+                            JsonConvert.SerializeObject(best).SaveTo(fileName);
                             Submit(mapData, best.Clone() as ChildItem[], bestValue);
-                            File.WriteAllText(fileName, JsonConvert.SerializeObject(best));
                         }
                     }
-
 
                     maxHistory.Add(bestValue);
                     if (maxHistory.Count > 2)
@@ -253,9 +252,10 @@ public class SandboxSearch
                 {
                     children[i][mutation].F3100Count = Rnd.Next(3);
                     children[i][mutation].F9100Count = Rnd.Next(3);
-                }else
+                }
+                else
                 {
-                    children[i][mutation].Latitude = MoveInLat(children[i][mutation].Latitude + RandomLatitude());                    
+                    children[i][mutation].Latitude = MoveInLat(children[i][mutation].Latitude + RandomLatitude());
                     children[i][mutation].Longitude = MoveInLon(children[i][mutation].Longitude + RandomLongitude());
                 }
             }

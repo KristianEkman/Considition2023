@@ -16,11 +16,9 @@ internal class Api
     public async Task<MapData> GetMapDataAsync(string mapName, string apiKey)
     {
         var fileName = $"{mapName}.mapdata.json";
-        if (File.Exists(fileName))
-        {
-            var fileContent = File.ReadAllText(fileName);
-            return JsonConvert.DeserializeObject<MapData>(fileContent);
-        }
+        var fileText = fileName.ReadFileText();
+        if (fileText != string.Empty)
+            return JsonConvert.DeserializeObject<MapData>(fileText);
 
         HttpRequestMessage request = new();
         request.Method = HttpMethod.Get;
@@ -29,24 +27,24 @@ internal class Api
         HttpResponseMessage response = await _httpClient.SendAsync(request);
         response.EnsureSuccessStatusCode();
         string responseText = await response.Content.ReadAsStringAsync();
-        File.WriteAllText(fileName, responseText);
+        responseText.SaveTo(fileName);
         return JsonConvert.DeserializeObject<MapData>(responseText);
     }
 
     public async Task<GeneralData> GetGeneralDataAsync()
     {
         var fileName = $"general.data.json";
-        if (File.Exists(fileName))
+        var fileText = fileName.ReadFileText();
+        if (fileText != string.Empty)
         {
-            var fileContent = File.ReadAllText(fileName);
-            var gdata = JsonConvert.DeserializeObject<GeneralData>(fileContent);
+            var gdata = JsonConvert.DeserializeObject<GeneralData>(fileText);
             HelperExtensions.LocationTypes = gdata.LocationTypes.ToArray();
             return gdata;
         }
         var response = await _httpClient.GetAsync("/api/game/getgeneralgamedata");
         response.EnsureSuccessStatusCode();
         string responseText = await response.Content.ReadAsStringAsync();
-        File.WriteAllText(fileName, responseText);
+        responseText.SaveTo(fileName);
         var data = JsonConvert.DeserializeObject<GeneralData>(responseText);
         HelperExtensions.LocationTypes = data.LocationTypes.ToArray();
         return data;
