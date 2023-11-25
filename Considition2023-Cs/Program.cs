@@ -5,7 +5,7 @@ var mapName = "";
 Parse(args);
 
 if (string.IsNullOrEmpty(mapName))
-     mapName = SelectMap();
+    mapName = SelectMap();
 
 if (string.IsNullOrEmpty(mapName))
 {
@@ -19,11 +19,13 @@ HttpClient client = new();
 Api api = new(client);
 MapData mapData = await api.GetMapDataAsync(mapName, apikey);
 GeneralData generalData = await api.GetGeneralDataAsync();
+mapData.Enrich(generalData);
 
 if (isSandBox)
     SandboxSearch.Run(mapData, generalData, true);
 else
-    GeneticSearchFaster.Run(mapData, generalData, true);
+    //GeneticSearchFaster.Run(mapData, generalData, true);
+    ScannerSearch.Run(mapData, generalData, true);
 
 void Parse(string[] args)
 {

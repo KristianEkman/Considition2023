@@ -52,5 +52,47 @@ namespace Considition2023_Cs
                 return File.ReadAllText(path);
             return string.Empty;
         }
+
+        public static void Enrich(this MapData mapData, GeneralData generalData)
+        {
+            var k = 0;
+            foreach (var loc in mapData.locations)
+                loc.Value.IndexKey = k++;
+            foreach (var hs in mapData.Hotspots)
+                hs.IndexKey = k++;
+
+            foreach (var location in mapData.locations)
+            {
+                foreach (var sibling in mapData.locations)
+                {
+                    if (sibling.Value == location.Value)
+                        continue;
+                    var dist = Distance(location.Value.Latitude, location.Value.Longitude, sibling.Value.Latitude, sibling.Value.Longitude);
+                    if (dist < generalData.WillingnessToTravelInMeters)
+                    {
+                        location.Value.Siblings.Add(sibling.Value.IndexKey);
+                    }
+                }
+            }
+        }
+
+        private static int Distance(double latitude1, double longitude1, double latitude2, double longitude2)
+        {
+            double r = 6371e3;
+            double latRadian1 = latitude1 * Math.PI / 180;
+            double latRadian2 = latitude2 * Math.PI / 180;
+
+            double latDelta = (latitude2 - latitude1) * Math.PI / 180;
+            double longDelta = (longitude2 - longitude1) * Math.PI / 180;
+
+            double a = Math.Sin(latDelta / 2) * Math.Sin(latDelta / 2) +
+                Math.Cos(latRadian1) * Math.Cos(latRadian2) *
+                Math.Sin(longDelta / 2) * Math.Sin(longDelta / 2);
+
+            double c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+            int distance = (int)Math.Round(r * c, 0);
+
+            return distance;
+        }
     }
 }

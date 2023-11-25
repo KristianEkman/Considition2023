@@ -52,6 +52,8 @@ namespace Considition2023_Cs
         public int footfallScale { get; set; }
         public double SalesVolume { get; set; }
         internal int IndexKey { get; set; }
+
+        internal List<int> Siblings { get; set; } = new List<int>();
     }
 
     public class Border
